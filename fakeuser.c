@@ -419,6 +419,8 @@ void fakekill2(char *nick, char *qmsg) {
    longtotoken(tmpp[i].numeric,tmps2,5);
    sendtouplink("%s Q :%s\r\n",tmps2,qmsg);
    fflush(sockout);
+   /* del fake from chans! */
+   deluserfromallchans(tmpp[i].numeric);
    a=uls[ulhash(tmpp[i].numeric)]; b=NULL;
    while (a!=NULL) {
     if (a->numeric==tmpp[i].numeric) {

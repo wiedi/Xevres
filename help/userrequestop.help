@@ -5,6 +5,6 @@ Desc.:   Can be used to request op on opless channels.
          The nickname is optional, if you don't supply it, your own nick
          will be inserted.
          DO NOT abuse this feature to take over channels. 
-	 DO NOT request ops for channels where you aren't a regular op.
+         DO NOT request ops for channels where you aren't a regular op.
 Example: requestop #quake.xyz Sucker
          Would request op for "Sucker" on #quake.xyz

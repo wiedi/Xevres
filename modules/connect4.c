@@ -1,32 +1,21 @@
 /*
-xevres 4wins module
+xevres connect4 module (a clone to bewares pascal connect4)
 
-  based on bewares connect4 bot and 4inarow 
-  by Davide Corrado (also known as Mr. Dave konrad)
+  based on 4inarow by Davide Corrado (also known as Mr. Dave konrad)
+  
+  this is just a code example for the new module interface.
+  note: this module wastes about 10MB and more of mem ;)
+  	--Wiedi
   
 */
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stddef.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <ctype.h>
 #include <string.h>
-#include <time.h>
-#include <unistd.h>
-#include <signal.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <dlfcn.h>
 #include "globals.h"
 #define MODNAM "connect4"
 
 /* Some options */
-
 /* Mirc Color Code Char */
 #define MC '\003' 
 /* Player 1 Color */
@@ -35,8 +24,6 @@ xevres 4wins module
 #define P2C '3'
 /* Background Color */
 #define BC '1'
-/* Empty Color */
-#define EC '12'
 /* Text Color */
 #define TC '0'
 /* Heighth */
@@ -45,24 +32,31 @@ xevres 4wins module
 #define PW 7
 /* Won */
 #define WIN 4
+/* max moves */
+#define NMOVES PH*PW
 
-typedef struct data
-{
+struct game {
   int nmoves;
   int pieces_in_a_column[PW];
   long pl1;
   long pl2;
+  int lastmove;
   char matrix[PH][PW];
-} fourinarow;
+};
+typedef struct game fourinarow;
 
-fourinarow * gamez[SIZEOFCL+1];
+fourinarow gamez[SIZEOFCL];
 
 /* here is code */
 
 /* proto */
 int getcid(char *chan);
+void initialize(fourinarow *four_game);
+void print_game(fourinarow *four_game, char *chan);
+int insert(fourinarow *four_game,int colonna,char colore);
+int checking(fourinarow *four_game,int col,char color);
 
-
+/* handler */
 void c4_help(long unum, char *tail) {
  msgffake(unum,"c","This module is not finished yet ;)");
 }
@@ -81,19 +75,44 @@ void c4_chmsg(long unum, char *chan, char *tail) {
   if (tail[0] == '!') {
     res2=sscanf(tail,"%s %s",tmps2,tmps3);
     if (res2 == 1) {
-      /* !1 - !7 */
-      if (gamez[cid]->pl1==unum || gamez[cid]->pl2==unum) {
-        /*play*/
-	printf("hi");
+      if ((tail[1] == '1') || (tail[1] == '2') || (tail[1] == '3') || (tail[1] == '4') || (tail[1] == '5') || (tail[1] == '6') || (tail[1] == '7')) {
+        /* !1 - !7 */
+        if ((gamez[cid].lastmove==2) ? gamez[cid].pl1==unum : gamez[cid].pl2==unum) {
+          /*play*/
+	  /* check if row full */
+	  if(gamez[cid].pieces_in_a_column[atoi(&tail[1])-1]<PH) {
+	    insert(&gamez[cid],atoi(&tail[1])-1,(gamez[cid].lastmove==2) ? 'X' : 'O');
+            if (gamez[cid].lastmove==2) {gamez[cid].lastmove=1;} else {gamez[cid].lastmove=2;}
+	    print_game(&gamez[cid],chan);
+            if(checking(&gamez[cid],atoi(&tail[1])-1,(gamez[cid].lastmove==1) ? 'X' : 'O')==1) {
+              /* win */
+	      cmsgffake(chan,"c","%c%c,%c %s %c%c,%c wins! ", MC, (gamez[cid].lastmove==2) ? P2C : P1C, BC, (gamez[cid].lastmove==1) ? unum2nick(gamez[cid].pl2) : unum2nick(gamez[cid].pl1), MC, TC, BC);  
+	      initialize(&gamez[cid]);
+	      return;
+            }
+	    if(gamez[cid].nmoves==NMOVES) {
+	      /* draw */
+	      cmsgffake(chan,"c","Draw game!");
+	      initialize(&gamez[cid]);
+	      return;
+	    }
+	    cmsgffake(chan,"c","%c%c,%c %s %c%c,%cto move ", MC, (gamez[cid].lastmove==1) ? P2C : P1C, BC, (gamez[cid].lastmove==1) ? unum2nick(gamez[cid].pl2) : unum2nick(gamez[cid].pl1), MC, TC, BC);
+          } else {
+	    cmsgffake(chan,"c","Column %c is full.",tail[1]);
+	  }  
+        }	
+      } else if (strcmp(tmps2,"!stop")==0) {
+        /* check if unum = op/oper/player */
+	cmsgffake(chan,"c","Game ended.");
+	initialize(&gamez[cid]);
       }	
     } else if (res2 == 2) {
       /* !play <player> */
       if (strcmp(tmps2,"!play")==0) {
-        if (gamez[cid]->pl1!=1) {
-          //msgffake(unum,"c","This module is not finished yet ;)");
-	  printf("hi");
+        if (gamez[cid].pl1!=-1) {
+          cmsgffake(chan,"c","There is a game already in progress.");
+	  return;
         }	
-        return;
         /* get unum of <player> */
 	a=getchanptr(chan);
         if (a==NULL) { return; /* should never happen */ }
@@ -108,8 +127,14 @@ void c4_chmsg(long unum, char *chan, char *tail) {
         }
 	if (ux==-1) {
 	  cmsgffake(chan,"c","User %s not on channel", tmps3, chan);
+	  return;
 	} else {
-	  cmsgffake(chan,"c","Playing against %s", tmps3, chan);
+	  /* start the game */
+	  gamez[cid].pl1=unum;
+	  gamez[cid].pl2=ux;
+	  gamez[cid].lastmove=2;
+	  print_game(&gamez[cid],chan);
+	  cmsgffake(chan,"c","%c%c,%c %s %c%c,%cto move ", MC, P1C, BC, unum2nick(gamez[cid].pl1), MC, TC, BC);
 	} 
       }	
     }  
@@ -154,42 +179,98 @@ int getcid(char *chan) {
 
 /* connect4 stuff */
 
-void initialize(fourinarow *four_game)
-{
+/* this looks normaly nicer but with some irc clients it's just ugly */
+void print_game_old(fourinarow *four_game, char *chan) {
+  char tmps[TMPSSIZE];
+  int count1,count2;
+  
+  cmsgffake(chan,"c","%c%c,%cGame: %s vs. %s", MC, TC, BC, unum2nick(four_game->pl1), unum2nick(four_game->pl2));
+  for(count1=PH-1;count1>=0;count1--)
+  {
+    sprintf(tmps,"%c%c,%c |", MC, TC, BC);
+    for(count2=0;count2<PW;count2++)
+    {
+      sprintf(tmps,"%s%c%c,%c %c |", tmps, MC, TC, BC, four_game->matrix[count1][count2]);
+    }
+    cmsgffake(chan,"c",tmps);
+    sprintf(tmps,"%c%c,%c +", MC, TC, BC);
+    for(count2=0;count2<PW;count2++) {
+      sprintf(tmps, "%s---+",tmps);
+    }
+    cmsgffake(chan,"c",tmps);
+  }
+  sprintf(tmps,"%c%c,%c  ", MC, TC, BC);
+  for(count2=0;count2<PW;count2++)
+  {
+    sprintf(tmps,"%s %d  ", tmps, count2+1);
+  }
+  cmsgffake(chan,"c",tmps);
+}
+
+void print_game(fourinarow *four_game, char *chan) {
+  char tmps[TMPSSIZE];
+  int count1,count2;
+  
+  cmsgffake(chan,"c","%c%c,%c%s %c%c,%cVS %c%c,%c%s ", MC, P1C, BC, unum2nick(four_game->pl1), MC, TC, BC, MC, P2C, BC, unum2nick(four_game->pl2));
+  for(count1=PH-1;count1>=0;count1--) {
+    sprintf(tmps,"%c%c,%c ", MC, TC, BC);
+    for(count2=0;count2<PW;count2++) {
+      sprintf(tmps,"%s%c%c,%c%c ", tmps, MC, (four_game->matrix[count1][count2]=='_') ? TC : ((four_game->matrix[count1][count2]=='X') ? P1C : P2C) , BC, four_game->matrix[count1][count2]);
+    }
+    cmsgffake(chan,"c",tmps);
+  }
+  sprintf(tmps,"%c%c,%c ", MC, TC, BC);
+  for(count2=0;count2<PW;count2++) {
+    sprintf(tmps,"%s%d ", tmps, count2+1);
+  }
+  cmsgffake(chan,"c",tmps);
+}
+
+void initialize(fourinarow *four_game) {
   int count1,count2;
   four_game->nmoves=0;
+  four_game->pl1=-1;
+  four_game->pl1=-1;
+  four_game->lastmove=0;
   for(count2=0;count2<PW;count2++)
   {
     four_game->pieces_in_a_column[count2]=0;
     for(count1=0;count1<PH;count1++)
     {
-      four_game->matrix[count1][count2]=' ';
+      four_game->matrix[count1][count2]='_';
     }
   }
 }
 
-int checking(fourinarow *four_game,int col,char color)
-{
+int insert(fourinarow *four_game,int colonna,char colore) {
+  if(four_game->pieces_in_a_column[colonna]<PH) {
+    four_game->nmoves++;
+    four_game->matrix[four_game->pieces_in_a_column[colonna]][colonna]=colore;
+    four_game->pieces_in_a_column[colonna]++;
+    return(1);
+  }
+  else return(0);
+}
+
+int checking(fourinarow *four_game, int col, char color) {
   int count, count2,row,column;
-  /* ----------------------- */
+  /* vertikal nach unten*/
   count=0;
   count2=0;
   column=col;
   row=four_game->pieces_in_a_column[column]-1;
-  while((count<WIN)&&(four_game->matrix[row][column]==color))
-  {
+  while((count<WIN)&&(four_game->matrix[row][column]==color)) {
     count++;
     count2++;
     row--;
   }
   if(count2>=WIN) return(1); 
-  /* ---------------------- */
+  /* horizontal nach links, dann nach rechts */
   count=0;
   count2=0;
   column=col;
   row=four_game->pieces_in_a_column[column]-1;
-  while((count<WIN)&&(four_game->matrix[row][column]==color)&&(column>=0))
-  {
+  while((count<WIN)&&(four_game->matrix[row][column]==color)&&(column>=0)) {
     count++;
     count2++;
     column--;
@@ -199,19 +280,17 @@ int checking(fourinarow *four_game,int col,char color)
   count2--;
   column=col;
   row=four_game->pieces_in_a_column[column]-1;
-  while((count<WIN)&&(four_game->matrix[row][column]==color)&&(column<7))
-  {
+  while((count<WIN)&&(four_game->matrix[row][column]==color)&&(column<7)) {
     count++;
     count2++;
     column++;
   }
   if(count2>=WIN) return(1);
-  /* ------------------------------ */
+  /* diagonal von rechts unten nach links oben*/
   count=0;
   count2=0;
   column=col;
-  while((count<WIN)&&(four_game->matrix[row][column]==color)&&(row<6)&&(column>=0))
-  {
+  while((count<WIN)&&(four_game->matrix[row][column]==color)&&(row<6)&&(column>=0)) {
     count++;
     count2++;
     row++;
@@ -222,21 +301,19 @@ int checking(fourinarow *four_game,int col,char color)
   count2--;
   column=col;
   row=four_game->pieces_in_a_column[column]-1;
-  while((count<WIN)&&(four_game->matrix[row][column]==color)&&(row>=0)&&(column<7))
-  {
+  while((count<WIN)&&(four_game->matrix[row][column]==color)&&(row>=0)&&(column<7)) {
     count++;
     count2++;
     row--;
     column++;
   }
   if(count2>=WIN) return(1); 
-  /* ----------------------------------- */
+  /* diagonal von links oben nach rechts unten */
   count=0;
   count2=0;
   column=col;
   row=four_game->pieces_in_a_column[column]-1; 
-  while((count<WIN)&&(four_game->matrix[row][column]==color)&&(row>=0)&&(column>=0)) 
-  {
+  while((count<WIN)&&(four_game->matrix[row][column]==color)&&(row>=0)&&(column>=0)) {
     count++;
     count2++;
     row--;
@@ -247,8 +324,7 @@ int checking(fourinarow *four_game,int col,char color)
   count2--;
   column=col;
   row=four_game->pieces_in_a_column[column]-1;
-  while((count<WIN)&&(four_game->matrix[row][column]==color)&&(row<6)&&(column<7))
-  {
+  while((count<WIN)&&(four_game->matrix[row][column]==color)&&(row<6)&&(column<7)) {
     count++;
     count2++;
     row++;
@@ -258,11 +334,7 @@ int checking(fourinarow *four_game,int col,char color)
   return(0);
 }
 
-
-
-
 /* Module stuff */
-
 void connect4_init() {
  char tmps2[TMPSSIZE]; 
  long xtime;
@@ -279,10 +351,8 @@ void connect4_init() {
  fflush(sockout);
  registerserverhandler(MODNAM,"K",c4_kick);
  registerserverhandler(MODNAM,"I",c4_invite);
- 
- for (i=0;i<SIZEOFCL;i++){
-  gamez[i]->pl1=1;
-  gamez[i]->pl2=1;
+ for (i=1;i<SIZEOFCL;i++){
+   initialize(&gamez[i]);
  } 
 }
 

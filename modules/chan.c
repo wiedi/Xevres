@@ -1,11 +1,6 @@
 /*
 xevres channel module
 coded by Wiedi
-
-TODO: 
-	* request cmd
-	* testing !!!
-	* bugfixing
 */
 
 #include <stdio.h>
@@ -1059,9 +1054,8 @@ void ch_access(long unum, char *tail) {
      return;
    }
    /* add or remove user? */
-   if (!up2 && (a>0)) {
+   if (up2->aflags==0 && a>0) {
      /* add */
-     /* we should ask auth.c if user has an account.... */
      up2=(cuser*)malloc(sizeof(cuser));
      mystrncpy(up2->name,acc,NICKLEN+1);
      up2->aflags=a;
@@ -1626,9 +1620,6 @@ void ch_dojoin() {
    cp->had_s=-1;
  }
  ux=getudptr(num);
- if (!ischarinstr('r',ux->umode)) {
-   return; 
- }
   
  if (CIsAutovoice(cp)) {
    voice=1;
@@ -1662,6 +1653,105 @@ void ch_dojoin() {
  }
  fflush(sockout);
  return;
+}
+
+void ch_doinvite() {
+ int numtotest, i, j, d;
+ long num;
+ regop *rop;
+ chanuser *cu;
+ userdata *ux, *udp;
+ channel *c;
+ rchan *cp;
+ cuser *up;
+ 
+ if (paramcount!=4) { return; }
+ toLowerCase2(params[2]);
+ toLowerCase2(params[3]);
+ if (strcmp(params[2],"x")!=0) { return; }
+ num=tokentolong(sender);
+ c=getchanptr(params[3]);
+ if (c==NULL) { return; }
+ if ((cp=ch_getchan(params[3]))) { 
+   newmsgtouser(num,"I am already on %s",params[3]);
+   return;
+ }
+ ux=getudptr(num);
+ if (ux==NULL) { return; }
+ if (!ischarinstr('r',ux->umode)) {
+   msgtouser(num,"You are not authed!");
+   return;
+ }    
+ /* ask chanfix */
+ numtotest=geteligiblecount(c);    
+ if (numtotest<1) { 
+   msgtouser(num,"Requirements not met"); 
+   return;
+ }
+ rop=(regop *)(c->reg->regops.content);
+ cu=(chanuser *)(c->users.content);
+ if (rop[0].score < CFMINSCORE) {
+   msgtouser(num,"Requirements not met"); 
+   return;
+ }
+ d=0;
+ for (i=0;i<numtotest;i++) {
+   if (rop[i].score >= CFMINSCORE) {
+     for (j=0;j<c->users.cursi;j++) {
+       udp=getudptr(cu[j].numeric);
+       if (!memcmp(udp->md5,rop[i].md5,16) && udp==ux) {
+         d=1;
+         break;
+       }
+     }
+   }
+ }  
+ if (d) {
+   newmsgtouser(num,"Requirements met, you are now owner of %s", params[3]);
+   cp=(rchan*)malloc(sizeof(rchan));
+   if (cp==NULL) {
+     putlog("out of mem @ chan.c ch_doinvite");
+     exit(1);
+   }  
+   mystrncpy(cp->name,c->name,CHANNELLEN+1);
+   mystrncpy(cp->creator,unum2auth(num),NICKLEN+1);
+   cp->cdate=getnettime();
+   cp->cflags=CM_DEFAULT;
+   cp->cptr=c;
+   cp->flag_limit=DEF_LIMIT;
+   cp->flag_suspendlevel=0;
+   cp->flag_welcome[0]='\0';
+   cp->flag_key[0]='\0';
+   cp->flag_fwchan[0]='\0';
+   cp->info[0]='\0';
+   cp->suspended_since=0;
+   cp->suspended_until=0;
+   cp->suspended_by[0]='\0';
+   cp->lastused=getnettime();
+   up=(cuser*)malloc(sizeof(cuser));
+   if (up==NULL) {
+     putlog("out of mem @ chan.c ch_doinvite");
+     exit(1);
+   }  
+   mystrncpy(up->name,unum2auth(num),NICKLEN+1);
+   up->aflags=UA_DEFAULT;
+   up->next=NULL;
+   cp->cusers=up;
+   if (!rchans)
+     cp->next=NULL;
+   else
+     cp->next=rchans;
+   rchans=cp;
+   sendtouplink("%sAAB J %s %ld\r\n",servernumeric,c->name,getnettime());
+   sim_join(c->name,(tokentolong(servernumeric)<<SRVSHIFT)+1);
+   sendtouplink("%s OM %s +o %sAAB\r\n",servernumeric,c->name,servernumeric);  
+   sim_mode(c->name,"+o",(tokentolong(servernumeric)<<SRVSHIFT)+1);
+   msgtouser(num,"Well Done");
+   return;
+ } else {
+   msgtouser(num,"Requirements not met"); 
+   return;
+ }     
 }
 
 /* Autolimit helper */
@@ -1936,6 +2026,7 @@ void ch_readdb(void) {
   cp->suspended_until=atol(myrow[11]);
   mystrncpy(cp->suspended_by,myrow[12],strlen(myrow[12]));
   cp->lastused=atol(myrow[13]);
+  cp->cusers=NULL;
   /* user flags */
   sprintf(tmps,"SELECT * from access_db where xchan='%s'",myrow[0]);
   res=mysql_query(&sqlcon,tmps);
@@ -1946,15 +2037,18 @@ void ch_readdb(void) {
   myres2=mysql_store_result(&sqlcon);
   while ((myrow2=mysql_fetch_row(myres2))) {
     up=(cuser*)malloc(sizeof(cuser));
-    mystrncpy(up->name,myrow2[1],strlen(myrow2[1]));
+    if (up==NULL) {
+      putlog("!!! BUY MORE MEM !!!");
+      return;
+    }  
+    mystrncpy(up->name,myrow2[1],NICKLEN);
     up->aflags=atoi(myrow2[3]);
     if (!cp->cusers)
       up->next=NULL;
     else
-      up->next=cp->cusers;
+      up->next=cp->cusers;  
     cp->cusers=up;
   }
-  mysql_free_result(myres2);
   if (!rchans)
     cp->next=NULL;
   else
@@ -2057,6 +2151,7 @@ void chan_init() {
   nulluser.aflags=0;
   registerserverhandler(MODNAM,"M",ch_domode);
   registerserverhandler(MODNAM,"J",ch_dojoin);
+  registerserverhandler(MODNAM,"I",ch_doinvite);
   if (uplinkup==1) { 
     donej=1;
     ch_readdb();
@@ -2095,6 +2190,7 @@ void chan_cleanup() {
   ch_partall();
   deregisterserverhandler2("M",MODNAM);
   deregisterserverhandler2("J",MODNAM);
+  deregisterserverhandler2("I",MODNAM);
   deregisterinternalevent("AC",MODNAM);
   deregisterinternalevent("EB",MODNAM);
   deregisterinternalevent("K SELF",MODNAM);

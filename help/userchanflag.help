@@ -16,11 +16,11 @@ Desc.:	 This command is used to view and manage the chanflags of
 			The channel limit will be the sum of the actual
 			usercount on the channel + the limit argument.
 	  +w (welcome)	Displays a welcome notice to joining users if 
-			the welcome flag is set.
+			the welcome argument is set.
 	  +i (invite)	Will force chanmode +i
 	  +h (hidden)	Will force chanmode +s (secret)
 	  +k (key)	Will force chanmode +k
-			Requires the key flag to be set.
+			Requires the key argument to be set.
 Example: access #xchannel +vslw
 	joining users will get voice and see a nice welcome message, 
 	nobody can be chanop, the limit is set automatically

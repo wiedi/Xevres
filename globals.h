@@ -31,48 +31,48 @@
 #define cm_O 0x2000	// chanmode +O (Oper only channel)
 #define cm_F 0x4000	// chanmode +F (Forward Chan)
 
-#define NICKLEN 15     // Maximum nick length
-#define USERLEN 10     // Maximum ident length
-#define HOSTLEN 63     // Maximum hostname length
-#define REALLEN 50     // Maximum realname length
-#define CHANNELLEN 200 // Maximum length of a channel name
-#define SRVLEN 200     // Maximum length of a servername
-#define TOPICLEN 250   // Maximum length of a topic
-#define CHANKEYLEN 26  // Maximum length of a channelkey
-#define MAXUMODES 20   // Maximum number of usermodes
-#define AUTHUSERLEN 40 // Maximum Length of a Username for authing
-#define AUTHPASSLEN 40 // Maximum length of a Password for authing
-#define RNGLEN 150     // Realname GLINE length (for the mask)
-#define RNGREAS 100    // Maximum length of reason in Realname-GLINEs
-#define RNGTIM 1800    // How many seconds the realname-glines will be set
+#define NICKLEN 15	// Maximum nick length
+#define USERLEN 10	// Maximum ident length
+#define HOSTLEN 63	// Maximum hostname length
+#define REALLEN 50	// Maximum realname length
+#define CHANNELLEN 200	// Maximum length of a channel name
+#define SRVLEN 200	// Maximum length of a servername
+#define TOPICLEN 250	// Maximum length of a topic
+#define CHANKEYLEN 26	// Maximum length of a channelkey
+#define MAXUMODES 20	// Maximum number of usermodes
+#define AUTHUSERLEN 40	// Maximum Length of a Username for authing
+#define AUTHPASSLEN 40	// Maximum length of a Password for authing
+#define RNGLEN 150	// Realname GLINE length (for the mask)
+#define RNGREAS 100	// Maximum length of reason in Realname-GLINEs
+#define RNGTIM 1800	// How many seconds the realname-glines will be set
 /* You need to adapt the following settings to the size of your network.
    If you make them too small, the size of the chains dangling from the
    hashtable-buckets will become too big, and X will become *S*L*O*W*
    Your average user/channelcount at peak time should be a good value for this. */
-#define SIZEOFUL 100000 // How many chained lists form the Userlist
-#define SIZEOFCL 100000 // The same for the channellist
-#define SIZEOFNL 100000 // and the Nicklist
-#define TMPSSIZE 1040  // Size of temporary strings. this is 1040 because a
-                       // string from the server has at most 512 bytes.
-                       // 2 * 512 + some bytes for safety makes 1040
-#define SRVSHIFT 18    // Servernumeric-Multiplier. Servernumeric SHIFTLEFT
-                       // SRVSHIFT + Clientnumeric = complete client numeric
-#define SRVNUMMULT 262144 // The same, but for use with "%"
-#define ARLIM1 100     // If new memory is needed for an array, this many
-                       // records will be allocated.
-#define ARLIM2 150     // If more than this number of records are free in an
-                       // array, memory is freed. Those are only default
-                       // values, arrays.c provides functions to change them.
-#define MAXPARAMS 30   // Every commandline received from the server gets split
-                       // up now. I'm pretty sure this will never exceed 30
-                       // parts.
-#define MODNAMELEN 50  // Maximum length of a module name (without path)
-#define MODDESCLEN 100 // Length for short module description.
-#define COMMANDLEN 50  // Max. length for dynamically loaded commands
-#define EXCESSGLINELEN 60*60*24*180 // How long is an excessively long gline?
-#define MAXINDIVIDUALGLINESYNC 10   // If more than this number of servers split
-                                    // we'll resync glines to everyone to save
-                                    // traffic
+#define SIZEOFUL 100000	// How many chained lists form the Userlist
+#define SIZEOFCL 100000	// The same for the channellist
+#define SIZEOFNL 100000	// and the Nicklist
+#define TMPSSIZE 1040	// Size of temporary strings. this is 1040 because a
+			// string from the server has at most 512 bytes.
+			// 2 * 512 + some bytes for safety makes 1040
+#define SRVSHIFT 18	// Servernumeric-Multiplier. Servernumeric SHIFTLEFT
+			// SRVSHIFT + Clientnumeric = complete client numeric
+#define SRVNUMMULT 262144	// The same, but for use with "%"
+#define ARLIM1 100	// If new memory is needed for an array, this many
+			// records will be allocated.
+#define ARLIM2 150	// If more than this number of records are free in an
+			// array, memory is freed. Those are only default
+			// values, arrays.c provides functions to change them.
+#define MAXPARAMS 30	// Every commandline received from the server gets split
+			// up now. I'm pretty sure this will never exceed 30
+			// parts.
+#define MODNAMELEN 50	// Maximum length of a module name (without path)
+#define MODDESCLEN 100	// Length for short module description.
+#define COMMANDLEN 50	// Max. length for dynamically loaded commands
+#define EXCESSGLINELEN 60*60*24*180	// How long is an excessively long gline?
+#define MAXINDIVIDUALGLINESYNC 10	// If more than this number of servers split
+					// we'll resync glines to everyone to save
+					// traffic
 
 #define NM_GLINE  0x1				/* GLINEs set / removed */
 #define NM_RNGL   0x2				/* Realname-GLINEs set */
@@ -101,12 +101,12 @@
 #define CFSCANBUCKETS		10000		/* Number of buckets to scan each interval */
 						/* You should st this to 1/10th of SIZEOFCL ! */
 
-#define REOP_OPPED         0  /* Opped at least one user */
-#define REOP_NOINFO       -1  /* No regular op info for channel */
-#define REOP_NOREGOPS     -2  /* No regular ops on channel */
-#define REOP_NOMATCH      -3  /* No suitable op on channel */
+#define REOP_OPPED	0	/* Opped at least one user */
+#define REOP_NOINFO	-1	/* No regular op info for channel */
+#define REOP_NOREGOPS	-2	/* No regular ops on channel */
+#define REOP_NOMATCH	-3	/* No suitable op on channel */
 
-#define SIZEOFSNC 1024 /* Size of the subnetcount-hashtable */
+#define SIZEOFSNC 1024		/* Size of the subnetcount-hashtable */
 
 typedef struct array array;
 struct array {
@@ -801,6 +801,7 @@ void loadallchans();
 void checkallchans();
 void checkchan(channel *c);
 void showchan(long unum, channel *c, int all);
+int geteligiblecount(channel *c);
 int doreop(channel *c);
 void showregs(long unum, channel *c);
 void showchansummary(long unum, channel *c);

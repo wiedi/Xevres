@@ -1,3 +1,7 @@
+Wed Nov 10 19:55:26 CET 2004	Wiedi	<wiedi@elbone.net>
+	* Fixed some bugs in chan.c
+	* chan.c has now a request command *needs testing*
+
 Sun Nov  7 15:51:57 CET 2004	Wiedi	<wiedi@elbone.net>
 	* Wrote lots of code while making hollidays ins france ;)
 	* New Channelmodule works but needs some testing (for documentation see help command / source, sorry ;)

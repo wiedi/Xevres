@@ -319,34 +319,6 @@ int doserverhandlers(char *cmd) {
   return foundone;
 }
 
-/* Can be called to undesync us more easily (hope this fucks up not to much :-) 
-   And YES: i know this is ugly!
-*/ 
-/*   
-   And yes: this fucks up too much, so removed!
-
-
-int dofserverhandlers(const char *template, ...) {
- long i; aserverhandler *sh; int foundone=0; unsigned int hasch;
- char cmd[TMPSSIZE];
- va_list ap;
- 
- va_start(ap,template);
- vsprintf(lastline,template,ap);
- va_end(ap);
- lastlinesplit();
- if (paramcount<2) { strcpy(cmd,""); } else { strcpy(cmd,params[1]); }
- hasch=shlhash(cmd);
- sh=(aserverhandler *)serverhandlerlist[hasch].content;
- for (i=0;i<serverhandlerlist[hasch].cursi;i++) {
-  if (strcmp(cmd,sh[i].name)==0) {
-   sh[i].func(); foundone=1;
-  }
- }
- return foundone;
-}
-*/
-
 void printhelp(long unum, char *hlptxt) {
   char *a; int b; char tmps2[TMPSSIZE];
   if (hlptxt==NULL) { return; }
@@ -375,9 +347,14 @@ void printhelp(long unum, char *hlptxt) {
 
 void dyncmdhelp(long unum, int oper, int authlev) {
   long i; dyncommands *dc;
+  char mod[MODNAMELEN+1];
   dc=(dyncommands *)commandlist.content;
   for (i=0;i<commandlist.cursi;i++) {
     if ((oper==dc[i].operonly) && (authlev>=dc[i].minlev)) {
+      if (strcmp(mod,dc[i].providedby)!=0 && isircop(unum)) {
+        newmsgtouser(unum,"                  \002%s module", dc[i].providedby);
+	mystrncpy(mod,dc[i].providedby,MODNAMELEN);
+      }
       printhelp(unum,dc[i].hlptxt);
     }
   }

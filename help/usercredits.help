@@ -1,5 +1,7 @@
 CREDITS
 =========
+
+Operserv: 
 Original design: Michael "Fox_Muld" Meier <fox@mulder.franken.de>
 Contributors:
 Rasmus "Bigfoot" Have: secretchannellist-module
@@ -8,3 +10,6 @@ Fredrik "froo" Soederblom: trustgroupmodify-command
 Michael "Mikey" Bujara: trustgroupungline-command
                         improved serverlist-command
 "splidge": chanfix-functionality, various patches
+
+Xevres:
+Sebastian "Wiedi" Wiedenroth <wiedi@elbone.net> 

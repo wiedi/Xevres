@@ -385,7 +385,7 @@ void doreqoppurge(long unum, char *tail) {
 void requestop_init() {
   setmoduledesc(MODNAM,"Functionality to request op on opless channels");
   registercommand2(MODNAM,"requestop", dorequestop, 0, 0,
-  "requestop #chan [nick]\tRequests op on an opless channel");
+  "requestop\tRequests op on an opless channel");
   registercommand2(MODNAM,"reqopsearchlog", doreqopsearchlog, 1, 990,
   "reqopsearchlog pattern\tSearches the logs for things matching pattern");
   registercommand2(MODNAM,"reqoppurge", doreqoppurge, 1, 998,

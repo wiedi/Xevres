@@ -1,3 +1,6 @@
+Sun Jul 18 18:56:54 CEST 2004   Wiedi	<wiedi@elbone.net>
+	* Added support for new w0nko ircd modes
+
 Wed Jun 23 23:01:09 CEST 2004	Wiedi	<wiedi@elbone.net>
 	* Added: Internal Event Handler (now you can use the channel module without the 
 	                                 auth module and vise versa, but if both modules

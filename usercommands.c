@@ -301,7 +301,7 @@ void dooperhelp(long unum, char *tail) {
   msgtouser(unum,"semiresync channelname    Resyncs a desynched channel");
   msgtouser(unum,"deopall channelname       Deops everyone on a channel (including Q!)");
   msgtouser(unum,"regexgline RE duration    Sets a regexp gline");
-  msgtouser(unum,"           type [reason]");
+  msgtouser(unum,"                          type [reason]");
   msgtouser(unum,"mfc [timespan]            Mirkforce-Check");
   msgtouser(unum,"serverlist                Lists servers");
   msgtouser(unum,"password [user] newp newp Changes password for you or another user");
@@ -310,12 +310,12 @@ void dooperhelp(long unum, char *tail) {
   msgtouser(unum,"listauthed                Lists who is authed right now");
   msgtouser(unum,"regexspew RE              Lists all clients matching a regexp");
   msgtouser(unum,"fakeuser nick ident       Creates a fake user (useful to block nicks)");
-  msgtouser(unum,"          host realname");
+  msgtouser(unum,"                          host realname");
   msgtouser(unum,"fakelist                  Lists all Fakeusers");
   msgtouser(unum,"fakekill nick             Removes a fakeuser");
   msgtouser(unum,"rnc                       Lists the 20 most common realnames on the net");
   msgtouser(unum,"rngline pattern duration  Adds a GLINE on a Realname");
-  msgtouser(unum,"          bantype reason");
+  msgtouser(unum,"                          bantype reason");
   msgtouser(unum,"rnungline pattern         Removes a GLINE on a Realname");
   msgtouser(unum,"rnglist                   Lists all Realname-GLINEs");
   msgtouser(unum,"rnglogsearch              Search log of activated Realname-GLINEs");
@@ -346,8 +346,8 @@ void douserhelp(long unum, char *tail) {
   }
   msgtouser(unum,"Xevres commands: ");
   msgtouser(unum,"================");
-/*  msgtouser(unum,"help [command]               Help for a specific command"); */
-/*  msgtouser(unum,"register username password   Create a new Account"); */
+  msgtouser(unum,"help                      Help for a specific command"); 
+
   dyncmdhelp(unum,0,getauthlevel(unum));
 }
 

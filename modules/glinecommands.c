@@ -405,7 +405,7 @@ void doclonegline(long unum, char *tail) {
 void glinecommands_init(void) {
   setmoduledesc(MODNAM,"This mod provides *gline*-commands");
   registercommand2(MODNAM, "block", doblockcmd, 1, 900,
-          "block [switch] nick\tCommand to gline the host/user by giving the users nickname\n        duration reason");
+          "block [switch] nick\tCommand to gline the host/user by giving the users nickname\n        \tduration reason");
   registercommand2(MODNAM, "unglinemask", dounglinemaskcmd, 1, 900,
           "unglinemask pattern\tCommand to remove glines on a cartain mask");
   registercommand2(MODNAM, "glist", doglist, 1, 0,

@@ -25,16 +25,19 @@ V 1.2
 -> backup: have a module that backups the sql database to a file
 
 V 1.0 [MAJOR]
--> chan: latest bug fixes
 -> main: code cleanups
+-> latest bugfixes, testing ...
 
 V 0.9
 -> auth: rewrite module
--> chan: complete rewrite
 -> connect4: fix memmory allocation
--> main: can be launched into background
+-> chan: latest bug fixes
 
-V 0.8.2 [WE ARE HERE]
+V 0.8.3 [WE ARE HERE]
+-> main: can be launched into background
+-> chan: complete rewrite
+
+V 0.8.2
 -> w0nko: support cmode F,O
 -> main: modules can have fake clients
 -> connect4: finished

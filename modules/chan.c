@@ -29,31 +29,43 @@ void xdummy(long unum, char *tail) {
 
 void ch_op(long unum, char *tail) {
  char tmps2[TMPSSIZE], tmps3[TMPSSIZE], tmps4[TMPSSIZE], tmps5[TMPSSIZE];
- int res2;
- long ux;
+ int res; long ux;
+ cuser *up; rchan *cp;
  
- res2=sscanf(tail,"%s %s %s",tmps2,tmps3,tmps4);
- if (res2 != 3 && res2 != 2) {
+ res=sscanf(tail,"%s %s %s",tmps2,tmps3,tmps4);
+ if (res != 3 && res != 2) {
   msgtouser(unum,"op usage:");
-  msgtouser(unum,"/msg X op <channel> [nick]");
+  newmsgtouser(unum,"/msg %s op <channel> [nick]",mynick);
   return;
  }
- if (uhaccoc(unum2auth(unum),tmps3,'o')==0 || uhaccoc(unum2auth(unum),tmps3,'c')==0 || checkauthlevel(unum,300)) {
-  if (res2 == 2) {
+ if (!(cp=ch_getchan(tmps3))) {
+   newmsgtouser(unum,"I am not on %s",tmps3);
+   return;
+ }
+ if (!(up=ch_getchanuser(cp,unum2auth(unum)))) {
+   newmsgtouser(unum,"You are not known on %s",tmps3);
+   return;
+ }  
+ if (!UHasOp(up) && !UHasCoowner(up) && !UHasOwner(up) && !checkauthlevel(unum,400)) {
+   msgtouser(unum,"You don't have the permission for this");
+   return;
+ }
+   
+ if (res == 2) {
    longtotoken(unum,tmps5,5);
-  } else {
+ } else {
    ux=nicktonum(tmps4);
    if (ux<0) {
-    newmsgtouser(unum,"User %s is not on the network.",tmps4);
-    return;
+     newmsgtouser(unum,"User %s is not on the network.",tmps4);
+     return;
    }
    longtotoken(ux,tmps5,5); 
-  }
-  sendtouplink("%sAAB M %s +o %s\r\n",servernumeric,tmps3,tmps5); 
-  sim_mode(tmps3,"+o",tokentolong(tmps5));
-  fflush(sockout);
-  msgtouser(unum,"Here is your op");
- }  
+ }
+ sendtouplink("%sAAB M %s +o %s\r\n",servernumeric,tmps3,tmps5); 
+ sim_mode(tmps3,"+o",tokentolong(tmps5));
+ fflush(sockout);
+ msgtouser(unum,"Here is the op");
+   
 }
 
 void ch_voice(long unum, char *tail) {
@@ -370,16 +382,17 @@ void ch_chanmode(long unum, char *tail) {
 }
 
 void ch_add(long unum, char *tail) {
-  char tmps2[TMPSSIZE], tmps3[TMPSSIZE], tmps4[TMPSSIZE], tmps5[TMPSSIZE];
+  char tmps2[TMPSSIZE], tmps3[TMPSSIZE], tmps4[TMPSSIZE];
+  int res;
+  rchan *cp;
+  cuser *up;
   userdata *reqrec;
-  int res2;
   long nettime;
-  MYSQL_RES *myres; MYSQL_ROW myrow;
   
-  res2=sscanf(tail,"%s %s %s",tmps2,tmps3,tmps4);
-  if (res2 != 3) {
+  res=sscanf(tail,"%s %s %s",tmps2,tmps3,tmps4);
+  if (res != 3) {
    msgtouser(unum,"addchan usage:");
-   msgtouser(unum,"/msg X addchan <channel> <owner>");
+   newmsgtouser(unum,"/msg %s addchan <channel> <owner>",mynick);
    return;
   }
   if (uhacc(tmps4)!=0) {
@@ -387,25 +400,45 @@ void ch_add(long unum, char *tail) {
    return;
   } 
   reqrec=getudptr(unum);
-  sprintf(tmps2,"SELECT count(*) from Xchannels where xchan='%s'",tmps3);
-  res2=mysql_query(&sqlcon,tmps2);
-  myres=mysql_store_result(&sqlcon);
-  myrow=mysql_fetch_row(myres);
-  mysql_free_result(myres);
-  if (strcmp(myrow[0],"0")==0) {
+  if (!ch_getchan(tmps3)) {
    nettime=getnettime();
    channel *c;
    toLowerCase(tmps3);
    c=getchanptr(tmps3);
    if (c==NULL) { 
-    msgtouser(unum,"Sorry, that channel does not exist!");
+    msgtouser(unum,"Sorry, nobody is on that channel!");
     return;
    }
-   sprintf(tmps5,"INSERT INTO Xchannels (xchan, owner, suspendlevel, cdate, topic, modes) VALUES ('%s','%s',0,%ld,'%s','%s')",tmps3,tmps4,nettime,c->topic,DEFCHANMODES);
-   res2=mysql_query(&sqlcon,tmps5);
-   sprintf(tmps5,"INSERT INTO Xacclevs (xuser, xchan,  accesslevels) VALUES ('%s','%s','%s')",tmps4,tmps3,DEFOWNERMODE);
-   res2=mysql_query(&sqlcon,tmps5);
-   sendtouplink("%sAAB J %s %ld\r\n",servernumeric,tmps3,nettime);
+   cp=(rchan*)malloc(sizeof(rchan));
+   mystrncpy(cp->name,c->name,CHANNELLEN+1);
+   mystrncpy(cp->creator,tmps4,NICKLEN+1);
+   cp->cdate=nettime;
+   cp->cflags=CM_DEFAULT;
+   cp->cptr=c;
+   cp->flag_limit=DEF_LIMIT;
+   cp->flag_suspendlevel=0;
+   mystrncpy(cp->flag_welcome,"",TOPICLEN+1);
+   mystrncpy(cp->flag_key,"",CHANKEYLEN+1);
+   mystrncpy(cp->flag_fwchan,"",CHANNELLEN+1);
+   mystrncpy(cp->info,"",MAXINFOLEN+1);
+   cp->suspended_since=0;
+   cp->suspended_until=0;
+   mystrncpy(cp->suspended_by,"",NICKLEN+1);
+   cp->lastused=nettime;
+   up=(cuser*)malloc(sizeof(cuser));
+   mystrncpy(up->name,tmps4,NICKLEN+1);
+   up->aflags=UA_DEFAULT;
+   if (!cp->cusers)
+     up->next=NULL;
+   else
+     up->next=cp->cusers;
+   cp->cusers=up;
+   if (!rchans)
+     cp->next=NULL;
+   else
+     cp->next=rchans;
+   rchans=cp;
+   sendtouplink("%sAAB J %s %ld\r\n",servernumeric,c->name,nettime);
    sim_join(tmps3,(tokentolong(servernumeric)<<SRVSHIFT)+1);
    sendtouplink("%s OM %s +o %sAAB\r\n",servernumeric,tmps3,servernumeric);  
    sim_mode(tmps3,"+o",(tokentolong(servernumeric)<<SRVSHIFT)+1);
@@ -525,8 +558,8 @@ void ch_joinall() {
   }
 } 
 
-void ch_partall(char *xwhy) {
-  sendtouplink("%sAAB J 0\r\n");
+void ch_partall() {
+  sendtouplink("%sAAB J 0\r\n",servernumeric);
   sim_join("0",(tokentolong(servernumeric)<<SRVSHIFT)+1);
 } 
 
@@ -646,20 +679,25 @@ void ch_ieac(char *xarg) {
 void ch_ieeb(char *xarg) {
  if (donej==0 && uplinkup==1) { 
   donej=1;
+  ch_readdb();
   ch_joinall(); 
  }
+}
+
+void ch_iek(char *xarg) {
+  ch_joinall(); 
 }
 
 /* database things */
 void ch_readdb(void) {
  char tmps[TMPSSIZE];
- int res2;
+ int res, res2;
  long xtime;
  rchan *cp;
- MYSQL_RES *myres; MYSQL_ROW myrow;
+ cuser *up;
+ MYSQL_RES *myres, *myres2; MYSQL_ROW myrow, myrow2;
  
- sprintf(tmps,"SELECT * from chan_db");
- res2=mysql_query(&sqlcon,tmps);
+ res2=mysql_query(&sqlcon,"SELECT * from chan_db");
  if (res2!=0) {
   putlog("!!! Could not read channel database !!!");
   return;
@@ -668,7 +706,13 @@ void ch_readdb(void) {
  xtime=getnettime();
  while ((myrow=mysql_fetch_row(myres))) {
   cp=(rchan*)malloc(sizeof(rchan));
+  if (cp==NULL) {
+    putlog("!!! BUY MORE MEM !!!");
+    return;
+  }  
   mystrncpy(cp->name,myrow[0],CHANNELLEN+1);
+  mystrncpy(cp->creator,myrow[1],NICKLEN+1);
+  cp->cdate=atol(myrow[2]);
   cp->cflags=atoi(myrow[3]);
   cp->cptr=getchanptr(cp->name);
   cp->flag_limit=atoi(myrow[4]);
@@ -677,29 +721,64 @@ void ch_readdb(void) {
   mystrncpy(cp->flag_key,myrow[7],CHANKEYLEN+1);
   mystrncpy(cp->flag_fwchan,myrow[8],CHANNELLEN+1);
   mystrncpy(cp->info,myrow[9],MAXINFOLEN+1);
-  cp->suspended_since=atoi(myrow[10]);
-  cp->suspended_until=atoi(myrow[11]);
+  cp->suspended_since=atol(myrow[10]);
+  cp->suspended_until=atol(myrow[11]);
   mystrncpy(cp->suspended_by,myrow[12],NICKLEN+1);
+  cp->lastused=atol(myrow[13]);
+  /* user flags */
+  sprintf(tmps,"SELECT * from access_db where xchan='%s'",cp->name);
+  res=mysql_query(&sqlcon,tmps);
+  if (res!=0) {
+    putlog("!!! Could not read channel access database !!!");
+    return;
+  }
+  myres2=mysql_store_result(&sqlcon);
+  while ((myrow2=mysql_fetch_row(myres2))) {
+    up=(cuser*)malloc(sizeof(cuser));
+    mystrncpy(up->name,myrow2[1],NICKLEN+1);
+    up->aflags=atoi(myrow2[2]);
+    if (!cp->cusers)
+     up->next=NULL;
+    else
+     up->next=cp->cusers;
+    cp->cusers=up;
+  }
+  mysql_free_result(myres2);
   if (!rchans)
     cp->next=NULL;
   else
     cp->next=rchans;
   rchans=cp;
  }
- sprintf(tmps,"SELECT * from access_db");
- res2=mysql_query(&sqlcon,tmps);
- if (res2!=0) {
-  putlog("!!! Could not read channel access database !!!");
-  return;
- }
- myres=mysql_store_result(&sqlcon);
- while ((myrow=mysql_fetch_row(myres))) {
-  /* parse user access flags */
- } 
+ mysql_free_result(myres);
 }
 
 void ch_savedb(void) {
-
+  char tmps[TMPSSIZE];
+  rchan *cp;
+  cuser *up;
+  int c=0,u=0;
+  /* empty old db */
+  mysql_query(&sqlcon,"TRUNCATE TABLE chan_db");
+  mysql_query(&sqlcon,"TRUNCATE TABLE access_db");
+  /* write new */
+  for(cp=rchans;cp;cp=cp->next) {
+    sprintf(tmps,"INSERT INTO chan_db (xchan, creator, cdate, cflags, flimit, fsuspendlvl, fwelcome, "
+    		"fkey, ffwchan, info, susp_since, susp_until, susp_by) VALUES ('%s','%s',%ld,'%d','%d',"
+		"'%d','%s','%s','%s','%ld','%ld','%s','%ld')",cp->name,cp->creator,cp->cdate,cp->cflags,
+		cp->flag_limit,cp->flag_suspendlevel,cp->flag_welcome,cp->flag_key,cp->info,cp->suspended_since,
+		cp->suspended_until,cp->suspended_by,cp->lastused);
+putlog("%s",tmps);
+    mysql_query(&sqlcon,tmps);
+    for(up=cp->cusers;up;up=up->next) {
+      sprintf(tmps,"INSERT INTO access_db (xuser, xchan, aflags) VALUES ('%s','%s','%i')",up->name,
+      		cp->name,up->aflags);
+      mysql_query(&sqlcon,tmps);
+      u++;
+    }
+    c++;
+  }
+  putlog("Wrote %i channels and %i users into the db",c,u); 
 }
 
 void ch_createdb(long unum, char *tail) {
@@ -708,18 +787,38 @@ void ch_createdb(long unum, char *tail) {
   msgtouser(unum,"Attempting to make the channel database");
   sprintf(tmps,"CREATE TABLE chan_db (xchan varchar(%i) NOT NULL, creator varchar(%i) NOT NULL,"
   	" cdate bigint NOT NULL, cflags int(11) DEFAULT '%i', flimit int(11) DEFAULT '%i',"
-	" fsuspendlvl int(11) DEFAULT '0' NOT NULL, fwelcome varchar(%i),"
+	" fsuspendlvl int(11) DEFAULT '0', fwelcome varchar(%i),"
 	" fkey varchar(%i), ffwchan varchar(%i), info varchar(%i), susp_since bigint, "
-	" susp_until bigint, susp_by varchar(%i), PRIMARY KEY (xchan), UNIQUE xchan (xchan))",
-	CHANNELLEN+1,NICKLEN+1,CM_DEFAULT,DEF_LIMIT,TOPICLEN+1,CHANKEYLEN+1,CHANNELLEN+1,MAXINFOLEN+1,NICKLEN+1);
+	" susp_until bigint, susp_by varchar(%i), lastused bigint, PRIMARY KEY (xchan), "
+	"UNIQUE xchan (xchan))",CHANNELLEN,NICKLEN,CM_DEFAULT,DEF_LIMIT,TOPICLEN,CHANKEYLEN,
+	CHANNELLEN,MAXINFOLEN,NICKLEN);	
   mysql_query(&sqlcon,tmps);
   sprintf(tmps,"CREATE TABLE access_db (aid int(11) UNSIGNED NOT NULL AUTO_INCREMENT,"
-  	" xuser varchar(%i) NOT NULL, xchan varchar(%i) NOT NULL, accesslevels varchar(15),"
-	" PRIMARY KEY (aid), UNIQUE aid (aid))",NICKLEN+1,CHANNELLEN+1);
+  	" xuser varchar(%i) NOT NULL, xchan varchar(%i) NOT NULL, aflags int(11),"
+	" PRIMARY KEY (aid), UNIQUE aid (aid))",NICKLEN,CHANNELLEN);
   mysql_query(&sqlcon,tmps);
   msgtouser(unum,"Yeah Done");
 }
 
+/* help functions */
+
+rchan *ch_getchan(char *chan) {
+  rchan *cp;
+  for(cp=rchans;cp;cp=cp->next) {
+    if (strcmp(cp->name,chan)==0) 
+      return cp;
+  }
+  return 0;
+}      
+
+cuser *ch_getchanuser(rchan *cp, char *account) {
+  cuser *up;
+  for(up=cp->cusers;up;up=up->next) {
+    if (strcmp(up->name,account)==0) 
+      return up;
+  }
+  return 0;
+}     
 
 /* Module Things */
 
@@ -727,13 +826,14 @@ void chan_init() {
   setmoduledesc(MODNAM,"Xevres Channel module");
   registerserverhandler(MODNAM,"M",ch_domode);
   registerserverhandler(MODNAM,"J",ch_dojoin);
-  ch_readdb();
   if (uplinkup==1) { 
    donej=1;
+   ch_readdb();
    ch_joinall(); 
   } 
   registerinternalevent(MODNAM,"AC",ch_ieac);
   registerinternalevent(MODNAM,"EB",ch_ieeb);
+  registerinternalevent(MODNAM,"K SELF",ch_iek);
   
   registercommand2(MODNAM,"op", ch_op, 0, 0, "op\tGives you channel operator status");
   registercommand2(MODNAM,"voice", ch_voice, 0, 0,"voice\tGives you voice");
@@ -761,25 +861,34 @@ void chan_init() {
 }
 
 void chan_cleanup() {
-  ch_partall("Channel Modul Unloaded");
+  ch_partall();
   deregisterserverhandler2("M",MODNAM);
   deregisterserverhandler2("J",MODNAM);
   deregisterinternalevent("AC",MODNAM);
   deregisterinternalevent("EB",MODNAM);
+  deregisterinternalevent("K SELF",MODNAM);
   deregistercommand("op");
   deregistercommand("voice");
   deregistercommand("invite");
   deregistercommand("topic");
   deregistercommand("kick");
+  deregistercommand("chanmode");
   deregistercommand("ban");
-  deregistercommand("clear");
+  deregistercommand("unban");
+  deregistercommand("unbanall");
+  deregistercommand("deopall");
+  deregistercommand("clearchan");
   deregistercommand("recover");
   deregistercommand("access");
-  deregistercommand("chanmode");
+  deregistercommand("chanflags");
+  deregistercommand("chaninfo");
+  deregistercommand("chanset");
   deregistercommand("addchan");
   deregistercommand("delchan");
   deregistercommand("suspendchan");
   deregistercommand("unsuspendchan");
+  deregistercommand("suspendlist");
   deregistercommand("createdb_chan");
+  deregistercommand("savedb_chan");
 }
 

@@ -22,6 +22,7 @@ V 1.4
 V 1.2
 -> tcl: basic tcl module
 -> gamestats: basic gamestats interface
+-> backup: have a module that backups the sql database to a file
 
 V 1.0 [MAJOR]
 -> chan: latest bug fixes

@@ -398,8 +398,7 @@ void handlekillmsg() {
   if (strcmp(params[2],tmps2)==0) {
     longtotoken(iptolong(127,0,0,1),tmps2,6);
     sendtouplink("%s N %s 1 %ld xevres %s +odk %s %sAAB :Xevres Rocks %s\r\n",servernumeric,mynick,starttime,myname,tmps2,servernumeric,operservversion);
-    sendtouplink("%sAAB J #xchannel %ld\r\n",servernumeric,starttime);
-    sendtouplink("%s OM #xchannel +o %sAAB\r\n",servernumeric,servernumeric);
+    dointernalevents("K SELF","");
     dochanneljoins();
     return;
   }

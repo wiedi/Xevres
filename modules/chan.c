@@ -27,7 +27,7 @@ known bugs:
 #define MODNAM "chan"
 
 #define DEFCHANMODES "s"
-#define DEFOWNERMODE "c"
+#define DEFOWNERMODE "cao"
 
 int donej=0;
 // int uplinkup;
@@ -380,6 +380,7 @@ void ch_add(long unum, char *tail) {
   if (strcmp(myrow[0],"0")==0) {
    nettime=getnettime();
    channel *c;
+   toLowerCase(tmps3);
    c=getchanptr(tmps3);
    if (c==NULL) { 
     msgtouser(unum,"Sorry, that channel does not exist!");

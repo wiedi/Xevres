@@ -58,7 +58,14 @@ int checking(fourinarow *four_game,int col,char color);
 
 /* handler */
 void c4_help(long unum, char *tail) {
- msgffake(unum,"c","This module is not finished yet ;)");
+ msgffake(unum,"c","If you want C to be on your channel just invite me. To get rid of me, kick me.");
+ msgffake(unum,"c","Type in channel: !start <nick> and !stop to begin/end a game. !1 - !7 to insert coin.");
+}
+
+void c4_version(long unum, char *tail) {
+ msgffake(unum,"c","Xevres Connect4 Module (compiled on %s)", __DATE__);
+ msgffake(unum,"c","Coded by Wiedi based on the idea of bewares pascal connect4.");
+ msgffake(unum,"c","Some code stolen from Davide Corrado's 4inarow.");
 }
 
 void c4_chmsg(long unum, char *chan, char *tail) {
@@ -86,7 +93,7 @@ void c4_chmsg(long unum, char *chan, char *tail) {
 	    print_game(&gamez[cid],chan);
             if(checking(&gamez[cid],atoi(&tail[1])-1,(gamez[cid].lastmove==1) ? 'X' : 'O')==1) {
               /* win */
-	      cmsgffake(chan,"c","%c%c,%c %s %c%c,%c wins! ", MC, (gamez[cid].lastmove==2) ? P2C : P1C, BC, (gamez[cid].lastmove==1) ? unum2nick(gamez[cid].pl2) : unum2nick(gamez[cid].pl1), MC, TC, BC);  
+	      cmsgffake(chan,"c","%c%c,%c %s %c%c,%c wins! ", MC, (gamez[cid].lastmove==2) ? P2C : P1C, BC, (gamez[cid].lastmove==1) ? unum2nick(gamez[cid].pl1) : unum2nick(gamez[cid].pl2), MC, TC, BC);  
 	      initialize(&gamez[cid]);
 	      return;
             }
@@ -344,6 +351,8 @@ void connect4_init() {
  setmoduledesc(MODNAM,"Xevres 4wins module");
  createfakeuser2("C","connect4","games.xchannel.org","4 in a row");
  regfakecmd(MODNAM,"c","help", c4_help, 0, 0, "help\tShows very importent infos");
+ regfakecmd(MODNAM,"c","showcommands", c4_help, 0, 0, "showcommands\tAlias for help");
+ regfakecmd(MODNAM,"c","version", c4_version, 0, 0, "version\tShows version and credits");
  regfchanmsg(MODNAM,"c",c4_chmsg);
  longtotoken(fake2long("c"),tmps2,5);
  sendtouplink("%s J #xchannel :%ld\r\n",tmps2,xtime);

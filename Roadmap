@@ -12,13 +12,16 @@ V 1.6
 -> waldi: 20% story done
 -> stats: basic statistic module (mrtg)
 -> relay: basic relay functions
+-> gamestats: can use relay module
 
 V 1.4
 -> tcl: sql and multithreading support
 -> waldi: rewrite the waldi module
+-> gamestats: output to users works
 
 V 1.2
 -> tcl: basic tcl module
+-> gamestats: basic gamestats interface
 
 V 1.0 [MAJOR]
 -> chan: latest bug fixes
@@ -29,11 +32,18 @@ V 0.9
 -> chan: channel mode command
 -> chan: ban handling
 -> auth: rewrite module
--> w0nko: support cmode F,O
 -> chan: basic chan forwarding module
 -> vhost: basic vhost module
+-> w0nko: support for topic burst and new deaf mode
 
-V 0.8 [WE ARE HERE]
+V 0.8.2 [WE ARE HERE]
+-> w0nko: support cmode F,O
+-> mail: modules can have fake clients
+-> connect4: finished
+-> chan: more bugfixes
+-> auth: fix suspend user cmd
+
+V 0.8
 -> main: inter module communication
 -> chan: most chan mod commands
 

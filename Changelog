@@ -1,3 +1,7 @@
+Fri Sep  3 02:25:58 CEST 2004	Wiedi	<wiedi@elbone.net>
+	* Fixed new module functions
+	* Finshed Connect4 module
+
 Mon Jul 26 22:47:49 CEST 2004	Wiedi	<wiedi@elbone.net>
 	* Added Functions so modules can have thier own Fake Clients
 	* Added (nonworking) Connect4 module to show the functions

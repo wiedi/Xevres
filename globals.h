@@ -11,7 +11,7 @@
 #include "config.h"
 #include "stringtools.h"
 
-#define operservversion "0.8"
+#define operservversion "0.8.2"
 
 #define um_o 1     // +o on a channel (op)
 #define um_v 2     // +v on a channel (voice)

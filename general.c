@@ -104,6 +104,7 @@ static unsigned long crc32_tab[] = {
       0x5d681b02L, 0x2a6f2b94L, 0xb40bbe37L, 0xc30c8ea1L, 0x5a05df1bL,
       0x2d02ef8dL
 };
+int weareinvisible;
 
 time_t getnettime() {
   return time(NULL)+timestdif;
@@ -471,14 +472,16 @@ void putlog(const char *template, ...) {
   whatever=time(NULL);
   brt=*localtime(&whatever);
   if (strftime(tmps2,TMPSSIZE,logtimestampformat,&brt)==0) {
-    printf("You fucked up the timestamp-config!\n");
+    if (weareinvisible==0) { printf("You fucked up the timestamp-config!\n"); }
     strcpy(tmps2,"ILLEGAL-TIMESTAMP-FORMAT");
   }
-  printf("[%s] ",tmps2);
-  va_start(ap,template);
-  vprintf(template,ap);
-  va_end(ap);
-  printf("\n");
+  if (weareinvisible==0) {
+    printf("[%s] ",tmps2);
+    va_start(ap,template);
+    vprintf(template,ap);
+    va_end(ap);
+    printf("\n");
+  }  
   if (strcmp(logfile,"")!=0) {
     lf=fopen(logfile,"a");
     if (lf!=NULL) {

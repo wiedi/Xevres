@@ -89,6 +89,7 @@ const char crytok[]="ABCDEFGHIJKLMNOPQ/RSTUVWXYZabcdefgh.ijklmnopqrstuvwxyz01234
 const char upwdchars[]="ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789.!";
 char tmps1[TMPSSIZE];
 char command[TMPSSIZE];
+int weareinvisible;
 char conpass[100]="yeahsure";  // These are compile-time defaults only, you
 char mynick[NICKLEN+1]="X";          // should not change them, use a configfile
 char myname[100]="xevres.xchannel.org";  // instead.
@@ -99,6 +100,7 @@ char sqlpass[100]="yeahsure";
 char sqlhost[100]="localhost";
 char sqldb[100]="xevres";
 int sqlport=MYSQL_PORT;
+int stayhere=0;
 char servernumeric[3];
 char uplnum[3]="";
 char lastburstchan[520]="";
@@ -1129,6 +1131,7 @@ int loadconfig(char *filename, int isrehash) {
           if (strcmp(tmps2,"sqlpass")==0) { mystrncpy(sqlpass,tmps3,99); }
           if (strcmp(tmps2,"sqldb")==0) { mystrncpy(sqldb,tmps3,99); }
           if (strcmp(tmps2,"ipv4sncstartmask")==0) { ipv4sncstartmask=(strtoul(tmps3,NULL,10) % 33); }
+	  if (strcmp(tmps2,"stayhere")==0) { stayhere=atol(tmps3); }
         }
       }
     } else {
@@ -1409,6 +1412,18 @@ void dochanneljoins() {
   }
   fflush(sockout);
   mysql_free_result(sqlres);
+}
+
+void goaway() {
+  if (stayhere==0) {  
+    putlog("Ok, we are up - time to go in the background, cya.");
+    weareinvisible=1;
+    if (fork())
+      exit(0);
+    setsid();
+  } else {
+    putlog("stayhere not set to 0 - will not launch into background!");
+  }    
 }
 
 void addtonicklist(userdata *a) {

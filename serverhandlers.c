@@ -1203,6 +1203,7 @@ void handleeobmsg() {
     fakeuserload();
     putlog("Done.");
     pingallservers(); waitingforping=getnettime(); lastsettime=getnettime()-3600;
+    goaway();
   }
 }
 

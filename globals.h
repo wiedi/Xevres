@@ -455,6 +455,8 @@ extern unsigned long ipv4usercount; /* Number of users on 0.0.0.0/0 */
 extern unsigned long netmasks[33]; /* Netmasks */
 extern char logtimestampformat[TMPSSIZE/2];   /* strftime format for Log timestamps */
 extern int uplinkup; /* server connection ready to use? */
+extern int weareinvisible; /* running in background */
+extern int stayhere; /* don't launch into background */
 /* End of global variable definitions */
 
 /* Define important functions */
@@ -530,6 +532,7 @@ void delfromnicklist(char *nick);
 void writestatstodb(void);
 int isglineset(char *mask);
 void lastlinesplit(void); 
+void goaway(void);
 /* End of xevres.c */
 
 /* subnetlist.c */

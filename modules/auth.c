@@ -123,7 +123,7 @@ void doxpasswd(long unum, char *tail) {
   res2=sscanf(tail,"%s %s %s %s %s",tmps2,tmps3,tmps4,tmps5,tmps6);
   if (res2 != 5) {
     msgtouser(unum,"chpasswd usage:");
-    msgtouser(unum,"/msg X chpassword <authnick> <oldpassword> <newpassword> <newpassword>");
+    msgtouser(unum,"/msg X chpasswd <authnick> <oldpassword> <newpassword> <newpassword>");
     return;
   }
   if (strcmp(tmps5,tmps6)!=0) {

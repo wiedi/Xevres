@@ -24,7 +24,7 @@ based on QmOd by EZ_Target.
 #define MODNAM "auth"
 
 void doxauth(long unum, char *tail) {
-  char tmps2[TMPSSIZE], tmps3[TMPSSIZE], tmps4[TMPSSIZE], tmps5[TMPSSIZE];
+  char tmps2[TMPSSIZE], tmps3[TMPSSIZE], tmps4[TMPSSIZE], tmps5[TMPSSIZE], tmps6[TMPSSIZE], tmps7[TMPSSIZE];
   userdata *reqrec;
   int res2;
   MYSQL_RES *myres; MYSQL_ROW myrow;
@@ -36,8 +36,9 @@ void doxauth(long unum, char *tail) {
     msgtouser(unum,"/msg X auth <nick> <password>");
     return;
   }
-
-  sprintf(tmps2,"SELECT * from Xusers where username ='%s'",tmps3);
+  mysql_escape_string(tmps6,tmps3,strlen(tmps3));
+  mysql_escape_string(tmps7,tmps4,strlen(tmps4));
+  sprintf(tmps2,"SELECT * from Xusers where username ='%s'",tmps6);
   res2=mysql_query(&sqlcon,tmps2);
   if (res2!=0) {
     putlog("!!! Could not read X user database !!!");
@@ -51,7 +52,7 @@ void doxauth(long unum, char *tail) {
      msgtouser(unum,"Your account has been suspended!");
      return;
     } 
-    if (strcmp(myrow[1],tmps4)==0) {
+    if (strcmp(myrow[1],tmps7)==0) {
      userdata *up;
      up=getudptr(unum);
      if (!ischarinstr('r',up->umode)) {
@@ -99,7 +100,7 @@ void doxhello(long unum, char *tail) {
      sprintf(tmps3,"INSERT INTO Xusers (username, password, authlevel, lastauthed) VALUES ('%s','%s',1,%ld)",tmps5,tmps4,nettime);
      res2=mysql_query(&sqlcon,tmps3);
      msgtouser(unum,"Hi, welcome in our Network! Your account has been created");
-     sprintf(tmps3,"Your username is %s",tmps5);
+     sprintf(tmps3,"Your username is %s",reqrec->nick);
      msgtouser(unum,tmps3);
      sprintf(tmps3,"Your password is %s",tmps4);
      msgtouser(unum,tmps3);
@@ -114,7 +115,7 @@ void doxhello(long unum, char *tail) {
 }
 
 void doxpasswd(long unum, char *tail) {
-  char tmps2[TMPSSIZE], tmps3[TMPSSIZE], tmps4[TMPSSIZE], tmps5[TMPSSIZE], tmps6[TMPSSIZE];
+  char tmps2[TMPSSIZE], tmps3[TMPSSIZE], tmps4[TMPSSIZE], tmps5[TMPSSIZE], tmps6[TMPSSIZE], tmps7[TMPSSIZE], tmps8[TMPSSIZE], tmps9[TMPSSIZE];
   userdata *reqrec;
   int res2;
   MYSQL_RES *myres; MYSQL_ROW myrow;
@@ -129,7 +130,10 @@ void doxpasswd(long unum, char *tail) {
     msgtouser(unum,"You should type your new password two times the same. ;-)");
     return;
   }
-  sprintf(tmps2,"SELECT count(*) from Xusers where username ='%s' and password='%s'",tmps3,tmps4);
+  mysql_escape_string(tmps7,tmps3,strlen(tmps3));
+  mysql_escape_string(tmps8,tmps4,strlen(tmps4));
+  mysql_escape_string(tmps9,tmps5,strlen(tmps5));
+  sprintf(tmps2,"SELECT count(*) from Xusers where username ='%s' and password='%s'",tmps7,tmps8);
   res2=mysql_query(&sqlcon,tmps2);
   myres=mysql_store_result(&sqlcon);
   myrow=mysql_fetch_row(myres);
@@ -138,7 +142,7 @@ void doxpasswd(long unum, char *tail) {
     msgtouser(unum,"Your authname and/or password don't match our database.");
     return;
   }
-  sprintf(tmps2,"UPDATE Xusers SET password='%s' WHERE username='%s'",tmps5,tmps3);
+  sprintf(tmps2,"UPDATE Xusers SET password='%s' WHERE username='%s'",tmps9,tmps7);
   res2=mysql_query(&sqlcon,tmps2);
   msgtouser(unum,"Well Done.");
 }
@@ -150,20 +154,21 @@ void docreatexdb(long unum, char *tail) {
 }
 
 void dogetxpasswd(long unum, char *tail) {
-  char tmps2[TMPSSIZE], tmps3[TMPSSIZE], tmps4[TMPSSIZE];
+  char tmps2[TMPSSIZE], tmps3[TMPSSIZE], tmps5[TMPSSIZE];
 /*  userdata *reqrec; */
   int res2;
   MYSQL_RES *myres; MYSQL_ROW myrow;
 
-  res2=sscanf(tail,"%s %s %s",tmps2,tmps3,tmps4);
+  res2=sscanf(tail,"%s %s",tmps2,tmps3);
 
   if (res2 != 2) {
     msgtouser(unum,"getpass usage:");
-    msgtouser(unum,"/msg X getpass <nick>");
+    msgtouser(unum,"/msg X getpass <authnick>");
     return;
   }
-
-  sprintf(tmps2,"SELECT * from Xusers where username ='%s'",tmps3);
+  
+  mysql_escape_string(tmps5,tmps3,strlen(tmps3));
+  sprintf(tmps2,"SELECT * from Xusers where username ='%s'",tmps5);
   res2=mysql_query(&sqlcon,tmps2);
   if (res2!=0) {
     putlog("!!! Could not read X user database !!!");
@@ -180,19 +185,20 @@ void dogetxpasswd(long unum, char *tail) {
 }
 
 void doauthsuspend(long unum, char *tail) {
-  char tmps2[TMPSSIZE], tmps3[TMPSSIZE], tmps4[TMPSSIZE];
+  char tmps2[TMPSSIZE], tmps3[TMPSSIZE], tmps4[TMPSSIZE], tmps5[TMPSSIZE];
   userdata *reqrec;
   int res2;
   MYSQL_RES *myres; MYSQL_ROW myrow;
   reqrec=getudptr(unum);
-  res2=sscanf(tail,"%s %s %s",tmps2,tmps3,tmps4);
+  res2=sscanf(tail,"%s %s",tmps2,tmps3);
   if (res2 != 2) {
     msgtouser(unum,"authsuspend usage:");
     msgtouser(unum,"/msg X authsuspend <authname>");
     return;
   }
   /* Set authlevel to 0 */
-  sprintf(tmps2,"SELECT count(*) from Xusers where username ='%s' and authlevel='1'",tmps3);
+  mysql_escape_string(tmps5,tmps3,strlen(tmps3));
+  sprintf(tmps2,"SELECT count(*) from Xusers where username ='%s' and authlevel='1'",tmps5);
   res2=mysql_query(&sqlcon,tmps2);
   myres=mysql_store_result(&sqlcon);
   myrow=mysql_fetch_row(myres);
@@ -201,7 +207,7 @@ void doauthsuspend(long unum, char *tail) {
     msgtouser(unum,"Your authname dosn't match our database or is suspended already.");
     return;
   }
-  sprintf(tmps2,"UPDATE Xusers SET authlevel='0' WHERE username='%s'",tmps3);
+  sprintf(tmps2,"UPDATE Xusers SET authlevel='0' WHERE username='%s'",tmps5);
   res2=mysql_query(&sqlcon,tmps2);
   /* Disconnect all User authed with tmps4 */
   int hcount;
@@ -223,19 +229,20 @@ void doauthsuspend(long unum, char *tail) {
   newmsgtouser(unum,"Suspend hit %i online users. Well Done.",kcount);
 }
 void doauthunsuspend(long unum, char *tail) {
-  char tmps2[TMPSSIZE], tmps3[TMPSSIZE], tmps4[TMPSSIZE];
+  char tmps2[TMPSSIZE], tmps3[TMPSSIZE], tmps5[TMPSSIZE];
   userdata *reqrec;
   int res2;
   MYSQL_RES *myres; MYSQL_ROW myrow;
   reqrec=getudptr(unum);
-  res2=sscanf(tail,"%s %s %s",tmps2,tmps3,tmps4);
+  res2=sscanf(tail,"%s %s",tmps2,tmps3);
   if (res2 != 2) {
     msgtouser(unum,"authunsuspend usage:");
     msgtouser(unum,"/msg X authunsuspend <authname>");
     return;
   }
-  /* Set authlevel to 0 */
-  sprintf(tmps2,"SELECT count(*) from Xusers where username ='%s' and authlevel='0'",tmps3);
+  /* Set authlevel to 1 */
+  mysql_escape_string(tmps5,tmps3,strlen(tmps3));
+  sprintf(tmps2,"SELECT count(*) from Xusers where username ='%s' and authlevel='0'",tmps5);
   res2=mysql_query(&sqlcon,tmps2);
   myres=mysql_store_result(&sqlcon);
   myrow=mysql_fetch_row(myres);
@@ -244,7 +251,7 @@ void doauthunsuspend(long unum, char *tail) {
     msgtouser(unum,"Your authname dosn't match our database or is no suspended.");
     return;
   }
-  sprintf(tmps2,"UPDATE Xusers SET authlevel='1' WHERE username='%s'",tmps3);
+  sprintf(tmps2,"UPDATE Xusers SET authlevel='1' WHERE username='%s'",tmps5);
   res2=mysql_query(&sqlcon,tmps2);
   msgtouser(unum,"Well Done.");
 }

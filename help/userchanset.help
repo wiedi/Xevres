@@ -1,0 +1,21 @@
+chanset (Lvl. 0)
+---------------------------------------
+Syntax:	 chanset <#channel> <param> [value]
+Desc.:	 Chanset is used to view or change the parameters needed by
+	 the channelflags. To view the parameters you need to have at
+	 least one accessflag on the channel. 
+	 Avalible channel parameters are:
+	  limit		if chanflag +f is set the limit parameter is
+			added to the usercount on the channel to set 
+			the channel limit
+	  		to change this value you need +o, +c or +n
+	  welcome	the welcome message which is shown to joining
+			users if chanflag +w is set
+			you need +o, +c or +n to change this value
+	  key		the channelkey which is forced if chanflag +k
+			is set
+			you need +o, +c or +n to view this value and
+			+c or +n to change it
+Example: chanset #xchannel key supersecret
+		will force the channelkey to "supersecret" if chanflag 
+		+k is set

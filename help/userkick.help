@@ -1,0 +1,14 @@
+kick (Lvl. 0)
+---------------------------------------
+Syntax:  (1) kick <#channel> <nick> [reason]
+ 	 (2) kick <#channel> <nick>[!ident@host] [reason]
+Desc.:	 (1) If you have the accessflag +o you can use this
+	     command to kick one user from the channel. 
+	 (2) If you have the accessflag +c or +n you can
+	     use wildcards and kick users with matching
+	     nickname, ident and hostname.
+          If no reason was supplied "Requested by <yournick>"
+	  will be inserted.
+Example: kick #xchannel *!*@spamhost.co.uk we do not like you
+	 Would kick all users with spamhost.co.uk as hostname
+	 from #xchannel with the reason "we do not like you"

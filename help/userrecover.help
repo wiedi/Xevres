@@ -1,0 +1,9 @@
+recover (Lvl. 0)
+---------------------------------------
+Syntax:  recover <#channel>
+Desc.:	 Executes unbanall, deopall and clearmodes
+	 if you have accessflags +c or +n
+Example: recover #fluxbox
+	 Will remove all channelbans, deop everybody
+	 and clear the channel modes on #fluxbox
+	 (e.g. after a takeover)

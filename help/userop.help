@@ -1,0 +1,10 @@
+op (Lvl. 0)
+---------------------------------------
+Syntax:	 op <#channel> [nickname]
+Desc.:	 If you have the required accessflags you will be oped.
+	 If you don't supply a nickname, your own nick will be
+	 inserted. Required accessflags for this command are:
+	 +o, +c or +n
+Example: op #unterschlupf drscream
+	 Would op DrScream on #unterschlupf if i had the required
+	 accessflags

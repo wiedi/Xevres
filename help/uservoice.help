@@ -1,0 +1,9 @@
+voice (Lvl. 0)
+---------------------------------------
+Syntax:	 voice <#channel> [nickname]
+Desc.:	 You can gain voice on a channel you have the +v
+	 accessflag. If you have +o, +c or +n you can use this
+	 command to give other users voice.
+Example: voice #necronomicon madcat
+	 Would give madcat voice on #necronomicon if i had the 
+	 required accessflags

@@ -1,0 +1,8 @@
+topic (Lvl. 0)
+---------------------------------------
+Syntax:	 topic <#topic> <topic>
+Desc.:	 Can be used to set the topic on a channel without
+	 beeing oped. X will set the topic if you have the
+	 +o, +c or +o accessflag.
+Example: topic #necronomicon Klaatu Verata Nikto
+	 Changes the topic on #Necronomicon to "Klaatu Verata Nikto"

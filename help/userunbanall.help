@@ -1,0 +1,7 @@
+unbanall (Lvl. 0)
+---------------------------------------
+Syntax:  unbanall <#channel>
+Desc.:	 Removes all bans from a channel if you have 
+	 accessflags +o, +c or +n.
+Example: unbanall #area51
+	 Removes all bans on #area51

@@ -1,0 +1,9 @@
+invite (Lvl. 0)
+---------------------------------------
+Syntax:	 invite <#channel> [nickname]
+Desc.:	 You can invite you into a channel you have the +i
+	 accessflag on. If you have +o, +c or +n you can use 
+	 this command to invite other users, too.
+Example: invite #unterschlupf lozar
+	 Would invite lozar into #unterschlupf if i had the 
+	 required accessflags

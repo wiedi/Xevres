@@ -1,0 +1,26 @@
+chanflag (Lvl. 0)
+---------------------------------------
+Syntax:	 chanflag <#channel> [<+|-><flags>]
+Desc.:	 This command is used to view and manage the chanflags of 
+	 a channel. Chanflags specify how X should act on a channel.
+	 Avalible chanflags are:
+
+	  +v (voice)	Every user joining is voiced
+	  +p (protect)	Users with accessflag +o can not be deoped
+	  +f (force)	accessflags are forced
+	  +s (secure)	Only X (and the owner) can become a 
+			channeloperator.
+	  +l (limit)	The channel limit is set automaticaly.
+			This flag requires the limit argument which can 
+			be set with the chanset command.
+			The channel limit will be the sum of the actual
+			usercount on the channel + the limit argument.
+	  +w (welcome)	Displays a welcome notice to joining users if 
+			the welcome flag is set.
+	  +i (invite)	Will force chanmode +i
+	  +h (hidden)	Will force chanmode +s (secret)
+	  +k (key)	Will force chanmode +k
+			Requires the key flag to be set.
+Example: access #xchannel +vslw
+	joining users will get voice and see a nice welcome message, 
+	nobody can be chanop, the limit is set automatically

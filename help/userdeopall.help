@@ -1,0 +1,8 @@
+deopall (Lvl. 0)
+---------------------------------------
+Syntax:  deopall <#channel>
+Desc.:	 Deops everybody on a channel if you have 
+	 accessflags +o, +c or +n.
+Example: deopall #area51
+	 There will be no ops on #area51 except X 
+	 after typing this command

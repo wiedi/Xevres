@@ -1004,7 +1004,7 @@ void ch_access(long unum, char *tail) {
    return;
  }
  up=ch_getchanuser(cp,unum2auth(unum));
- if (up->aflags==0 || !checkauthlevel(unum,500)) {
+ if (up->aflags==0 && !checkauthlevel(unum,500)) {
    newmsgtouser(unum,"You are not known on %s",tmps3);
    return;
  }

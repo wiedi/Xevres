@@ -141,8 +141,10 @@ char modpath[FILENAME_MAX]="/home/fox/O/modules/"; // Path where loadable module
 char modend[10]=".so"; // What filesuffix modules have
 array modulelist;      // List of all loaded modules
 array commandlist;     // List of all loaded commands
+array fakecmdlist;     // List of all loaded commands for fake users
 array serverhandlerlist[SIZEOFSHL]; // List of all serverhandlers
 array internaleventlist[SIZEOFSHL]; // List of all internalevents
+array fchanmsglist[SIZEOFSHL]; // List of all chanmsg handlers
 int glineautosync=1;
 volatile int igotsighup=0;
 char *configfilename;
@@ -1511,6 +1513,9 @@ int main(int argc, char **argv) {
   array_init(&commandlist,sizeof(dyncommands));
   array_setlim1(&commandlist,50);
   array_setlim2(&commandlist,75);
+  array_init(&fakecmdlist,sizeof(dynfakecmds));
+  array_setlim1(&fakecmdlist,50);
+  array_setlim2(&fakecmdlist,75);
   for (iii=0;iii<SIZEOFSHL;iii++) {
     array_init(&serverhandlerlist[iii],sizeof(aserverhandler));
     array_setlim1(&serverhandlerlist[iii],5);
@@ -1520,6 +1525,11 @@ int main(int argc, char **argv) {
     array_init(&internaleventlist[iii],sizeof(aieventhandler));
     array_setlim1(&internaleventlist[iii],5);
     array_setlim2(&internaleventlist[iii],7);
+  }
+  for (iii=0;iii<SIZEOFSHL;iii++) {
+    array_init(&fchanmsglist[iii],sizeof(fchmsg));
+    array_setlim1(&fchanmsglist[iii],5);
+    array_setlim2(&fchanmsglist[iii],7);
   }
   array_init(&deniedtrusts,sizeof(trustdeny));
   strcpy(sendglinesto,"");
@@ -1748,6 +1758,7 @@ int main(int argc, char **argv) {
   while (modulelist.cursi>0) { removemodule(((loadedmod *)(modulelist.content))[0].name); }
   array_free(&modulelist);
   array_free(&commandlist);
+  array_free(&fakecmdlist);
   dumpuserlist();
   for (iii=0;iii<SIZEOFNL;iii++) { array_free(&nls[iii]); }
   for (iii=0;iii<SIZEOFCL;iii++) {

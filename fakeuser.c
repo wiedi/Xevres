@@ -365,4 +365,99 @@ void docreatefakeuser(long unum, char *tail) {
   msgtouser(unum,"Fake user created");
 }
 
+void createfakeuser2(char *nick, char *ident, char *host, char *realname) {
+ long x1;
+ char nicklow[TMPSSIZE];
+ strcpy(nicklow,nick),
+ toLowerCase(nicklow);
+ x1=nicktonu2(nicklow);
+ if (x1!=-1) {
+  char fooker[100]; userdata *a, *b;
+  if ((x1>>SRVSHIFT)==tokentolong(servernumeric)) {
+   return;
+  }
+  longtotoken(x1,fooker,5);
+  deluserfromallchans(x1);
+  delautheduser(x1);
+  a=uls[ulhash(x1)]; b=NULL;
+  while (a!=NULL) {
+   if (a->numeric==x1) {
+    sncdel(a->realip);
+    rnldel(a->realname);
+    delfromnicklist(a->nick);
+    trustdelclient(a->ident,a->realip);
+    if (b==NULL) {
+     uls[ulhash(x1)]=(void *)a->next;
+    } else {
+     b->next=a->next;
+    }
+    free(a);
+    break;
+   }
+   b=a;
+   a=(void *)a->next;
+  }
+  sendtouplink("%s D %s :that nick is reserved\r\n",servernumeric,fooker);
+  fflush(sockout);
+ }
+ createfakeuser((tokentolong(servernumeric)<<SRVSHIFT)+getfreefakenum(),nick,ident,host,realname,1);
+}
+
+void fakekill2(char *nick, char *qmsg) {
+ unsigned long i; 
+ static char tmps2[TMPSSIZE]; 
+ afakeuser *tmpp;
+ tmpp=((afakeuser *)(myfakes.content));
+ for (i=0;i<myfakes.cursi;i++) {
+  strcpy(tmps2,tmpp[i].nick);
+  toLowerCase(tmps2);
+  if (strcmp(tmps2,nick)==0) {
+   userdata *a, *b;
+   if ((tmpp[i].numeric % SRVNUMMULT)<10) {
+    return;
+   }
+   longtotoken(tmpp[i].numeric,tmps2,5);
+   sendtouplink("%s Q :%s\r\n",tmps2,qmsg);
+   fflush(sockout);
+   a=uls[ulhash(tmpp[i].numeric)]; b=NULL;
+   while (a!=NULL) {
+    if (a->numeric==tmpp[i].numeric) {
+     sncdel(a->realip);
+     rnldel(a->realname);
+     delfromnicklist(a->nick);
+     trustdelclient(a->ident,a->realip);
+     if (b==NULL) {
+      uls[ulhash(tmpp[i].numeric)]=(void *)a->next;
+     } else {
+      b->next=a->next;
+     }
+     freeastring(a->host);
+     freeastring(a->realname);
+     free(a);
+     break;
+    }
+    b=a;
+    a=(void *)a->next;
+   }
+   fakeuserdel(tmpp[i].numeric);
+   return;
+  }
+ }
+}
+
+long fake2long(char *nick) {
+ unsigned long i; 
+ static char tmps2[TMPSSIZE]; 
+ afakeuser *tmpp;
+ tmpp=((afakeuser *)(myfakes.content));
+ for (i=0;i<myfakes.cursi;i++) {
+  strcpy(tmps2,tmpp[i].nick);
+  toLowerCase(tmps2);
+  if (strcmp(tmps2,nick)==0) {
+   return tmpp[i].numeric;
+  }
+ }
+ return 0;
+}   
+
 /* End of Fakeuser-Functions */

@@ -1,5 +1,17 @@
+Mon Jul 26 22:47:49 CEST 2004	Wiedi	<wiedi@elbone.net>
+	* Added Functions so modules can have thier own Fake Clients
+	* Added (nonworking) Connect4 module to show the functions
+
+Sat Jul 24 23:42:33 CEST 2004	Wiedi	<wiedi@elbone.net>
+	* DrScream is now helping writing the help files - welcome :)
+
+Sat Jul 24 15:17:13 CEST 2004	Wiedi	<wiedi@elbone.net>
+	* Cleaned up the help command output
+
 Sun Jul 18 18:56:54 CEST 2004   Wiedi	<wiedi@elbone.net>
 	* Added support for new w0nko ircd modes
+
+=== 0.8 is released ==
 
 Wed Jun 23 23:01:09 CEST 2004	Wiedi	<wiedi@elbone.net>
 	* Added: Internal Event Handler (now you can use the channel module without the 

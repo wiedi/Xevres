@@ -275,6 +275,17 @@ struct dyncommands {
   void (*func)(long unum, char *tail);
 };
 
+typedef struct dynfakecmds dynfakecmds;
+struct dynfakecmds {
+  char name[COMMANDLEN+1];
+  char providedby[MODNAMELEN+1];
+  char fakenick[NICKLEN+1];
+  char *hlptxt;
+  int operonly;
+  int minlev;
+  void (*func)(long unum, char *tail);
+};
+
 typedef struct aserverhandler aserverhandler;
 struct aserverhandler {
   char name[COMMANDLEN+1];
@@ -287,6 +298,14 @@ struct aieventhandler {
   char name[COMMANDLEN+1];
   char providedby[MODNAMELEN+1];
   void (*func)(char *xparam);
+};
+
+/* channel msg for fake user */
+typedef struct fchmsg fchmsg;
+struct fchmsg {
+  char fakenick[NICKLEN+1];
+  char providedby[MODNAMELEN+1];
+  void (*func)(long unum, char *chan, char *tail);
 };
 
 typedef struct trustedgroup trustedgroup;
@@ -361,6 +380,7 @@ extern array nls[SIZEOFNL];      /* Nick-lists */
 extern array reg[SIZEOFCL];      /* Registered channel list */
 extern array serverhandlerlist[SIZEOFSHL]; // List of all serverhandlers
 extern array internaleventlist[SIZEOFSHL]; // List of all serverhandlers
+extern array fchanmsglist[SIZEOFSHL]; // List of all channel message handlers for fake cliens 
 extern autheduser *als;  /* List of authed users */
 extern flags chanflags[];
 extern int numcf; /* Number of Chanflags */
@@ -418,6 +438,7 @@ extern char modpath[FILENAME_MAX]; // Path where loadable modules reside.
 extern char modend[10];        // What filesuffix modules have
 extern array modulelist;      // List of all loaded modules
 extern array commandlist;     // List of all loaded commands
+extern array fakecmdlist;     // List of all loaded commands for fakeusers
 extern array serverhandlerlist[SIZEOFSHL]; // List of all serverhandlers
 extern array internaleventlist[SIZEOFSHL]; // List of all internal events
 extern trustedhost * trustedhosts[SIZEOFTL];       // The trusted hosts
@@ -531,6 +552,9 @@ void fakeusersave(void);
 void dofakelist(long unum, char *tail);
 void dofakekill(long unum, char *tail);
 void docreatefakeuser(long unum, char *tail);
+void createfakeuser2(char *nick, char *ident, char *host, char *realname);
+void fakekill2(char *nick, char *qmsg);
+long fake2long(char *nick);
 /* End of fakeuser.c */
 
 /* realnamegline.c */
@@ -593,6 +617,8 @@ int getwantsnotice(long unum);
 int getwantsnotic2(long unum);
 void msgtouser(long unum, char *txt);
 void newmsgtouser(long unum, const char *template, ...);
+void msgffake(long unum, char *nick, const char *template, ...);
+void cmsgffake(char *chan, char *nick, const char *template, ...);
 int checkauthlevel(long unum, int minlevel);
 void sendtonoticemask(unsigned long mask, char *txt);
 int isircop(long num);
@@ -603,6 +629,11 @@ char *md5tostr(char *md5);
 void deopall(channel *c);
 char * alacstr(char *x);
 void sendtouplink(const char *template, ...);
+char *unum2nick(long unum);
+void sim_join(char *xchan, long num);
+void sim_part(char *xchan, long num);
+void sim_topic(char *xchan, char *topic);
+void sim_mode(char *xchan, char *mode, long num);
 /* End of general.c */
 
 /* serverhandlers.c */
@@ -705,10 +736,17 @@ void deregisterserverhandler2(char *name, char *mod);
 void registerinternalevent(char *mod, char *name, void *func);
 void deregisterinternalevent(char *name, char *mod);
 int dointernalevents(char *cmd, char *template, ...);
-	/* done */
+	/* fakeuser commands */
+void regfakecmd(char *mod, char *nick, char *name, void *func, int operonly, int minlev, char *hlptxt);
+void deregfakecmd(char *name, char *nick);
+int dodynfakecmds(char *cmd, char *nick, long unum, char *tail, int oper, int authlev);
+	/* fakeuser channel handlers */
+void regfchanmsg(char *mod, char *nick, void *func);
+void deregfchanmsg(char *nick, char *mod);
+int dofchanmsg(char *nick, long unum, char *chan, char *template, ...);
+
 int dodyncmds(char *cmd, long unum, char *tail, int oper, int authlev);
 int doserverhandlers(char *cmd);
-/* int dofserverhandlers(const char *template, ...);   <- SUCKS */
 void dyncmdhelp(long unum, int oper, int authlev);
 void doloadmod(long unum, char *tail);
 void dounloadmod(long unum, char *tail);

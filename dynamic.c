@@ -280,7 +280,94 @@ int dointernalevents(char *cmd, char *template, ...) {
  return foundone;
 }
 
+/* Channel msgs for Fakeusers */
+void regfchanmsg(char *mod, char *nick, void *func) {
+  long i; fchmsg *sh; unsigned int hasch;
+  hasch=shlhash(nick);
+  i=array_getfreeslot(&fchanmsglist[hasch]);
+  sh=(fchmsg *)fchanmsglist[hasch].content;
+  sh[i].func=func;
+  mystrncpy(sh[i].providedby,mod,MODNAMELEN);
+  toLowerCase(sh[i].providedby);
+  mystrncpy(sh[i].fakenick,nick,NICKLEN);
+}
 
+void deregfchanmsg(char *nick, char *mod) {
+  long i; fchmsg *sh; unsigned int hasch;
+  hasch=shlhash(nick);
+  for (i=0;i<fchanmsglist[hasch].cursi;i++) {
+    sh=(fchmsg *)fchanmsglist[hasch].content;
+    if ((strcmp(nick,sh[i].fakenick)==0) && strcmp(sh[i].providedby,mod)==0) {
+      array_delslot(&fchanmsglist[hasch], i);
+      i--;
+    }
+  }
+}
+
+int dofchanmsg(char *nick, long unum, char *chan, char *template, ...) {
+ long i; fchmsg *sh; int foundone=0; unsigned int hasch;
+ char cmsg[TMPSSIZE];
+ va_list ap;
+ va_start(ap,template);
+ vsprintf(cmsg,template,ap);
+ va_end(ap);
+ hasch=shlhash(nick);
+ sh=(fchmsg *)fchanmsglist[hasch].content;
+ for (i=0;i<fchanmsglist[hasch].cursi;i++) {
+  if (strcmp(nick,sh[i].fakenick)==0) {
+   sh[i].func(unum, chan, cmsg); foundone=1;
+  }
+ }
+ return foundone;
+}
+
+/* Fakeuser commands */
+void regfakecmd(char *mod, char *nick, char *name, void *func, int operonly, int minlev, char *hlptxt) {
+  long i; dynfakecmds *dc;
+  i=array_getfreeslot(&fakecmdlist);
+  dc=(dynfakecmds *)fakecmdlist.content;
+  dc[i].operonly=operonly;
+  dc[i].func=func;
+  dc[i].minlev=minlev;
+  mystrncpy(dc[i].providedby,mod,MODNAMELEN);
+  mystrncpy(dc[i].name,name,COMMANDLEN);
+  mystrncpy(dc[i].fakenick,nick,NICKLEN);
+  toLowerCase(dc[i].name);
+  toLowerCase(dc[i].providedby);
+  toLowerCase(dc[i].fakenick);
+  dc[i].hlptxt=hlptxt;
+}
+
+void deregfakecmd(char *name, char *nick) {
+  long i; dynfakecmds *dc;
+  for (i=0;i<fakecmdlist.cursi;i++) {
+    dc=(dynfakecmds *)fakecmdlist.content;
+    if ((strcmp(name,dc[i].name)==0) && (strcmp(nick,dc[i].fakenick)==0)){
+      array_delslot(&fakecmdlist,i);
+      i--;
+    }
+  }
+}
+
+int dodynfakecmds(char *cmd, char *nick, long unum, char *tail, int oper, int authlev) {
+  long i; dynfakecmds *dc;
+  dc=(dynfakecmds *)fakecmdlist.content;
+  if (authlev<0) { return 0; }
+  for (i=0;i<fakecmdlist.cursi;i++) {
+    if ((strcmp(cmd,dc[i].name)==0) && (strcmp(nick,dc[i].fakenick)==0)){
+      if (oper>=dc[i].operonly) {
+        if (authlev<dc[i].minlev) {
+          msgffake(unum,nick,"This command requires at least authlevel %d (your level: %d)",
+            dc[i].minlev,authlev);
+          return 1;
+        }
+        dc[i].func(unum,tail);
+        return 1;
+      }
+    }
+  }
+  return 0;
+}
 
 /* Runs through all loaded commands and executes it if it is the one we search
    for

@@ -640,7 +640,7 @@ void handlemodemsg() {
 }
 
 void handleprivmsg() {
-  char tmps2[TMPSSIZE], tmps4[TMPSSIZE], ucmd[TMPSSIZE], lotmp[TMPSSIZE];
+  char tmps2[TMPSSIZE], tmps4[TMPSSIZE], ucmd[TMPSSIZE], lotmp[TMPSSIZE], fnick[NICKLEN+1];
   int res; long unum; char tail[TMPSSIZE]; int iio;
   if (paramcount!=4) {
     putlog("!!! Failed to parse privmsg: %s !!!",lastline);
@@ -653,6 +653,7 @@ void handleprivmsg() {
     putlog("!!! Failed to parse privmsg: %s !!!",lastline);
     return;
   }
+  
   toLowerCase(ucmd);
   iio=isircop(unum);
   if (!iio) {
@@ -660,29 +661,46 @@ void handleprivmsg() {
   } else {
     tail[450]='\0';  // And 450 for opers to prevent too long lines
   }
-//  printf("Tail: %s ;\n",tail);
   strcpy(tmps4,params[2]);
-  if (ischarinstr('@',tmps4)) {
+  if (tmps4[0] == '#') {
+   /* chanmsg */
+   long ix, iy, xnum;
+   channel *c; chanuser *u;
+   char xnick[NICKLEN+1];
+   toLowerCase(tmps4);
+   c=getchanptr(tmps4);
+   if (c==NULL) { /* eh this chan must exist! */ return; }   
+   u=(chanuser *)(c->users.content);
+   /* find fakes on chan */
+   for (ix=1;ix<myfakes.cursi;ix++) {
+    xnum=((afakeuser *)(myfakes.content))[ix].numeric;
+    mystrncpy(xnick,((afakeuser *)(myfakes.content))[ix].nick,NICKLEN);
+    toLowerCase(xnick);
+    for (iy=0;iy<c->users.cursi;iy++) {
+     if (u[iy].numeric==xnum) {
+      dofchanmsg(xnick,unum, tmps4, tail);
+     }
+    }
+   } 
+   return;
+  }else if (ischarinstr('@',tmps4)) {
     toLowerCase(tmps4);
   } else {
     normnum(tmps4);
     sprintf(tmps2,"%sAAB",servernumeric);
     if (strcmp(tmps4,tmps2)!=0) {
-      /* That message was not meant for O, but for one of the fakeusers */
+      /* That message was not meant for X, but for one of the fakeusers */
+      mystrncpy(fnick,unum2nick(tokentolong(tmps4)),NICKLEN);
+      dodynfakecmds(ucmd,fnick,unum,tail,1,getauthlevel(unum));
       return;
     }
   }
+  
   numtohostmask(unum,lotmp);
-  if ((strcmp(ucmd,"password")!=0) && (strcmp(ucmd,"login"))!=0) {
+  if ((strcmp(ucmd,"password")!=0) && (strcmp(ucmd,"login")!=0) && (strcmp(ucmd,"auth")!=0) && (strcmp(ucmd,"chpasswd")!=0)) {
     putlog("%s !%s!",lotmp,tail);
   }
-/*
-  if ((strcmp(tmps4,nicktomsg)!=0) && (strcmp(ucmd,"login")==0)) {
-    msgtouser(unum,"You should not /msg me this way. If you want to send commands, you should use");
-    sprintf(tmps4,"/msg %s@%s",mynick,myname);
-    msgtouser(unum,tmps4);
-   }
-*/
+
 // Insert all commands that are available to non-ircops here - and a copy below
   if (strcmp(ucmd,"login")==0) { doauth(unum,tail); return; }
   if (strcmp(ucmd,"help")==0) { douserhelp(unum,tail); if (!iio) { return; } }

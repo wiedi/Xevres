@@ -567,6 +567,35 @@ void newmsgtouser(long unum, const char *template, ...) {
   fflush(sockout);
 }
 
+/* msg from fake */
+void msgffake(long unum, char *nick, const char *template, ...) {
+  char target[100];
+  char tmpnum[6]; va_list ap;
+  longtotoken(unum,target,5);
+  longtotoken(fake2long(nick),tmpnum,5);
+  if (getwantsnotice(unum)) {
+    sendtouplink("%s O %s :",tmpnum,target);
+  } else {
+    sendtouplink("%s P %s :",tmpnum,target);
+  }
+  va_start(ap,template);
+  vfprintf(sockout,template,ap);
+  va_end(ap);
+  sendtouplink("\r\n");
+  fflush(sockout);
+}
+
+void cmsgffake(char *chan, char *nick, const char *template, ...) {
+  char tmpnum[6]; va_list ap;
+  longtotoken(fake2long(nick),tmpnum,5);
+  sendtouplink("%s P %s :",tmpnum,chan);
+  va_start(ap,template);
+  vfprintf(sockout,template,ap);
+  va_end(ap);
+  sendtouplink("\r\n");
+  fflush(sockout);
+}
+
 void sendtonoticemask(unsigned long mask, char *txt) {
   autheduser *a;
   if (strlen(txt)>480) { return; }
@@ -693,3 +722,61 @@ void sendtouplink(const char *template, ...) {
   vfprintf(sockout,template,ap);
   va_end(ap);
 }
+
+char *unum2nick(long unum) {
+ userdata *reqrec;
+ reqrec=getudptr(unum);
+ return reqrec->nick;
+}
+
+
+/* simulate functions */
+
+
+void sim_join(char *xchan, long num) {
+ channel *ctmp;
+ 
+ if (!chanexists(xchan)) {
+  newchan(xchan,0);
+ }
+ addusertochan(xchan,num);
+ ctmp=getchanptr(xchan);
+ if (ctmp!=NULL) { addchantouser2(num,ctmp); }
+} 
+
+void sim_part(char *xchan, long num) {
+ toLowerCase(xchan);
+ delchanfromuser(num,xchan);
+ deluserfromchan(xchan,num);
+}
+
+void sim_topic(char *xchan, char *topic) {
+ channel *c;
+ 
+ c=getchanptr(xchan);
+ if (c==NULL) { return; }
+ /* freeastring(c->topic); */
+ strcpy(c->topic,topic);
+}
+
+void sim_mode(char *xchan, char *mode, long num) {
+ channel *tmpcp;
+ toLowerCase(xchan);
+ tmpcp=getchanptr(xchan);
+ if (tmpcp==NULL) { return; }
+ if (mode[0] == '+') {
+  if (mode[1] == 'o') {
+   changechanmod2(tmpcp,num,1,um_o);
+  } else if (mode[1] == 'v') {
+   changechanmod2(tmpcp,num,1,um_v);
+  }
+ } else if (mode[0] == '-') {
+  if (mode[1] == 'o') {
+   changechanmod2(tmpcp,num,2,um_o);
+  } else if (mode[1] == 'v') {
+   changechanmod2(tmpcp,num,2,um_v);
+  } 
+ }
+}
+
+

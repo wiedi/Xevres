@@ -59,7 +59,7 @@ void ch_op(long unum, char *tail) {
    longtotoken(ux,tmps5,5); 
   }
   sendtouplink("%sAAB M %s +o %s\r\n",servernumeric,tmps3,tmps5); 
-  ch_simmode(tmps3,"+o",tokentolong(tmps5));
+  sim_mode(tmps3,"+o",tokentolong(tmps5));
   fflush(sockout);
   msgtouser(unum,"Here is your op");
  }  
@@ -92,7 +92,7 @@ void ch_voice(long unum, char *tail) {
    longtotoken(ux,tmps5,5); 
   }
   sendtouplink("%sAAB M %s +v %s\r\n",servernumeric,tmps3,tmps5); 
-  ch_simmode(tmps3,"+v",tokentolong(tmps5));
+  sim_mode(tmps3,"+v",tokentolong(tmps5));
   fflush(sockout);
   msgtouser(unum,"Here is your voice");
  }  
@@ -143,7 +143,7 @@ void ch_topic(long unum, char *tail) {
   sprintf(tmps2,"UPDATE Xchannels SET topic='%s' WHERE xchan='%s'", tmps5, tmps3);
   res2=mysql_query(&sqlcon,tmps2);
   sendtouplink("%sAAB T %s :%s\r\n",servernumeric,tmps3,tmps4); 
-  ch_simtopic(tmps3,tmps4);
+  sim_topic(tmps3,tmps4);
   fflush(sockout);
   msgtouser(unum,"Topic set");
  } else {
@@ -185,7 +185,7 @@ void ch_kick(long unum, char *tail) {
      } else {
       longtotoken(c->numeric,tmps2,5);
       sendtouplink("%sAAB K %s %s :%s\r\n",servernumeric,tmps3,tmps2,tmps5); 
-      ch_simpart(tmps3,c->numeric);
+      sim_part(tmps3,c->numeric);
       i++;
      } 
     } 
@@ -198,7 +198,7 @@ void ch_kick(long unum, char *tail) {
      } else {
       longtotoken(c->numeric,tmps2,5);
       sendtouplink("%sAAB K %s %s :%s\r\n",servernumeric,tmps3,tmps2,tmps5); 
-      ch_simpart(tmps3,c->numeric);
+      sim_part(tmps3,c->numeric);
       i++;
      } 
     }
@@ -221,7 +221,7 @@ void ch_kick(long unum, char *tail) {
     } else {
      longtotoken(c->numeric,tmps2,5);
      sendtouplink("%sAAB K %s %s :%s\r\n",servernumeric,tmps3,tmps2,tmps5); 
-     ch_simpart(tmps3,c->numeric);
+     sim_part(tmps3,c->numeric);
      msgtouser(unum,"Kicked away!");
      break;
     } 
@@ -390,9 +390,9 @@ void ch_add(long unum, char *tail) {
    sprintf(tmps5,"INSERT INTO Xacclevs (xuser, xchan,  accesslevels) VALUES ('%s','%s','%s')",tmps4,tmps3,DEFOWNERMODE);
    res2=mysql_query(&sqlcon,tmps5);
    sendtouplink("%sAAB J %s %ld\r\n",servernumeric,tmps3,nettime);
-   ch_simjoin(tmps3,(tokentolong(servernumeric)<<SRVSHIFT)+1);
+   sim_join(tmps3,(tokentolong(servernumeric)<<SRVSHIFT)+1);
    sendtouplink("%s OM %s +o %sAAB\r\n",servernumeric,tmps3,servernumeric);  
-   ch_simmode(tmps3,"+o",(tokentolong(servernumeric)<<SRVSHIFT)+1);
+   sim_mode(tmps3,"+o",(tokentolong(servernumeric)<<SRVSHIFT)+1);
    msgtouser(unum,"Well Done");
   } else {
    msgtouser(unum,"Sorry, I am already on this channel.");
@@ -416,7 +416,7 @@ void ch_del(long unum, char *tail) {
   sprintf(tmps2,"delete from Xacclevs where xchan='%s'",tmps3);
   res2=mysql_query(&sqlcon,tmps2);
   sendtouplink("%sAAB L %s\r\n",servernumeric,tmps3);
-  ch_simpart(tmps3,(tokentolong(servernumeric)<<SRVSHIFT)+1);
+  sim_part(tmps3,(tokentolong(servernumeric)<<SRVSHIFT)+1);
   newmsgtouser(unum,"Left %s",tmps3);
 }
 
@@ -487,11 +487,11 @@ void ch_dojoin() {
  if (uhaccoc(auth,params[2],'a')==0) {
   if (uhaccoc(auth,params[2],'o')==0) {
    sendtouplink("%sAAB M %s +o %s\r\n",servernumeric,params[2],sender);
-   ch_simmode(params[2],"+o",tokentolong(sender));
+   sim_mode(params[2],"+o",tokentolong(sender));
   }
   if (uhaccoc(auth,params[2],'v')==0) {
    sendtouplink("%sAAB M %s +v %s\r\n",servernumeric,params[2],sender);
-   ch_simmode(params[2],"+v",tokentolong(sender));
+   sim_mode(params[2],"+v",tokentolong(sender));
   }
  } 
  fflush(sockout);
@@ -516,11 +516,11 @@ void ch_joinall() {
  xtime=getnettime();
  while ((myrow=mysql_fetch_row(myres))) {
   sendtouplink("%sAAB J %s %ld\r\n",servernumeric,myrow[0],xtime);
-  ch_simjoin(myrow[0],(tokentolong(servernumeric)<<SRVSHIFT)+1);
+  sim_join(myrow[0],(tokentolong(servernumeric)<<SRVSHIFT)+1);
   sendtouplink("%s OM %s +o %sAAB\r\n",servernumeric,myrow[0],servernumeric);
-  ch_simmode(myrow[0],"+o",(tokentolong(servernumeric)<<SRVSHIFT)+1);
+  sim_mode(myrow[0],"+o",(tokentolong(servernumeric)<<SRVSHIFT)+1);
   sendtouplink("%sAAB T %s :%s\r\n",servernumeric,myrow[0],myrow[4]);
-  ch_simtopic(myrow[0],myrow[4]);
+  sim_topic(myrow[0],myrow[4]);
  }
  mysql_free_result(myres);
 } 
@@ -539,7 +539,7 @@ void ch_partall(char *xwhy) {
  myres=mysql_store_result(&sqlcon);
  while ((myrow=mysql_fetch_row(myres))) {
   sendtouplink("%sAAB L %s :%s\r\n",servernumeric,myrow[0],xwhy);
-  ch_simpart(myrow[0],(tokentolong(servernumeric)<<SRVSHIFT)+1);
+  sim_part(myrow[0],(tokentolong(servernumeric)<<SRVSHIFT)+1);
  }
  mysql_free_result(myres);
 } 
@@ -617,52 +617,6 @@ int uikoc (char *xuser, char *xchan) {
 
 /* Simulation Functions */
 
-void ch_simjoin(char *xchan, long num) {
- channel *ctmp;
- 
- if (!chanexists(xchan)) {
-  newchan(xchan,0);
- }
- addusertochan(xchan,num);
- ctmp=getchanptr(xchan);
- if (ctmp!=NULL) { addchantouser2(num,ctmp); }
-} 
-
-void ch_simpart(char *xchan, long num) {
- toLowerCase(xchan);
- delchanfromuser(num,xchan);
- deluserfromchan(xchan,num);
-}
-
-void ch_simtopic(char *xchan, char *topic) {
- channel *c;
- 
- c=getchanptr(xchan);
- if (c==NULL) { return; }
- /* freeastring(c->topic); */
- strcpy(c->topic,topic);
-}
-
-void ch_simmode(char *xchan, char *mode, long num) {
- channel *tmpcp;
- toLowerCase(xchan);
- tmpcp=getchanptr(xchan);
- if (tmpcp==NULL) { return; }
- if (mode[0] == '+') {
-  if (mode[1] == 'o') {
-   changechanmod2(tmpcp,num,1,um_o);
-  } else if (mode[1] == 'v') {
-   changechanmod2(tmpcp,num,1,um_v);
-  }
- } else if (mode[0] == '-') {
-  if (mode[1] == 'o') {
-   changechanmod2(tmpcp,num,2,um_o);
-  } else if (mode[1] == 'v') {
-   changechanmod2(tmpcp,num,2,um_v);
-  } 
- }
-}
-
 /* Internal Events */
 
 void ch_ieac(char *xarg) {
@@ -687,13 +641,13 @@ void ch_ieac(char *xarg) {
       if (isflagset(um,um_o)) { /* has op */ } else { 
        if (uhaccoc(tmps3,cx[i]->name,'o')==0) {
         sendtouplink("%sAAB M %s +o %s\r\n",servernumeric,cx[i]->name,tmps2);
-        ch_simmode(cx[i]->name,"+o",tokentolong(tmps2));
+        sim_mode(cx[i]->name,"+o",tokentolong(tmps2));
        }	
       }
       if (isflagset(um,um_v)) { /* has voice */ } else { 
        if (uhaccoc(tmps3,cx[i]->name,'v')==0) {
         sendtouplink("%sAAB M %s +v %s\r\n",servernumeric,cx[i]->name,tmps2);
-        ch_simmode(cx[i]->name,"+v",tokentolong(tmps2));
+        sim_mode(cx[i]->name,"+v",tokentolong(tmps2));
        }
       }
      }

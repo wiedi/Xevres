@@ -330,8 +330,9 @@ void ch_set(long unum, char *tail) {
 
 void ch_access(long unum, char *tail) {
  char tmps2[TMPSSIZE], tmps3[TMPSSIZE], tmps4[TMPSSIZE], tmps5[TMPSSIZE], acc[NICKLEN+1];
- int res, t1, t2, a=0, d=0, i;
+ int res, t1, t2, a=0, d=0, i; long un;
  cuser *up, *up2; rchan *cp;
+ userdata *ux;
  
  res=sscanf(tail,"%s %s %s %s",tmps2,tmps3,tmps4,tmps5);
  if ((res !=4) && (res !=2)) {
@@ -346,40 +347,108 @@ void ch_access(long unum, char *tail) {
    return;
  }
  
- if (!(up=ch_getchanuser(cp,unum2auth(unum)))) {
+ if (!(up=ch_getchanuser(cp,unum2auth(unum))) || !checkauthlevel(unum,500)) {
    newmsgtouser(unum,"You are not known on %s",tmps3);
    return;
  }
  
  if (res == 4) {
-   if (UHasOp(up) || UHasCoowner(up) || UHasOwner(up) || checkauthlevel(unum,800)){
-     t1=0; t2=0;
-     while (tmps5[t2]!='\0') {
-       if ((tmps5[t2]=='+') || (tmps5[t2]=='-')) {
-         if (tmps5[t2]=='+') { t1=1; } else { t1=0; }
+   t1=0; t2=0;
+   while (tmps5[t2]!='\0') {
+     if ((tmps5[t2]=='+') || (tmps5[t2]=='-')) {
+       if (tmps5[t2]=='+') { t1=1; } else { t1=0; }
+     } else {
+       if (t1==1) {
+         a|=flagstoint(tuflags,&tmps5[t2]);
        } else {
-         if (t1==1) {
-           a|=flagstoint(tuflags,&tmps5[t2]);
-         } else {
-           d|=flagstoint(tuflags,&tmps5[t2]);
-         }
+         d|=flagstoint(tuflags,&tmps5[t2]);
        }
-       t2++;
      }
-     if (!a && !d) {
-       msgtouser(unum,"No valid access flags given");
+     t2++;
+   }
+   if (!a && !d) {
+     msgtouser(unum,"No valid access flags given");
+     return;
+   }
+   if (tmps4[0] == '#') {
+     /* account */
+     res=sscanf(tmps4,"#%s",acc);
+   } else {
+     /* need to get account */
+     un=nicktonum(tmps4);
+     if (un<0) {
+       newmsgtouser(unum,"User %s is not on the network",tmps4);
        return;
      }
-     if (tmps3[0] == '#') {
-       /* account */
-     } else {
-       /* need to get account */
-     }
-     /* change flags */      
+     ux=getudptr(un);
+     if (!ischarinstr('r',ux->umode)) {
+       newmsgtouser(unum,"User %s is not authed",tmps4);
+       return;
+     }  
+     mystrncpy(acc,ux->authname,NICKLEN);       
+   }
+   up2=ch_getchanuser(cp,acc);
+   /* permissions checks */     
+   if (!UHasOwner(up) && ((d & (UF_OWNER|UF_COOWNER)) || (a & (UF_OWNER|UF_COOWNER)))) {
+     newmsgtouser(unum, "You don't have permission to add or remove (co)owners on %s",tmps3);
+     return;
    }  
+   if (up != up2 && ((d & UF_LOG) || (a & UF_LOG))) {
+     msgtouser(unum, "You can only set or remove the +l flag on your self");
+     return;
+   }
+   if ((!UHasOp(up) && !UHasCoowner(up) && !UHasOwner(up)) && (a & UF_LOG)) {
+     msgtouser(unum, "You need the +o flag or higher to set +l");
+     return;
+   }  
+   if (!(UHasCoowner(up) || UHasOwner(up) || checkauthlevel(unum,800) || ((d == UF_LOG) && (a == 0)) || (UHasOp(up) && ((d == 0) && (a == UF_LOG))))) {
+     msgtouser(unum, "You don't have the permission");
+     return;
+   }
+   /* add or remove user? */
+   if (!up2 && (a>0)) {
+     /* add */
+     /* we should ask auth.c if user has an account.... */
+     up2=(cuser*)malloc(sizeof(cuser));
+     mystrncpy(up2->name,acc,NICKLEN+1);
+     up2->aflags=a;
+     if (!cp->cusers)
+       up2->next=NULL;
+     else
+       up2->next=cp->cusers;
+     cp->cusers=up2;
+   } else if (!up2 && a==0) {
+     /* nothing */
+     newmsgtouser(unum, "User %s is not known on %s", acc, tmps3);
+     return;
+   } else {
+     /* update */
+     up2->aflags |= a;
+   }
+   up2->aflags &= ~d;
+   if (up2->aflags==0) {
+     /* delete */
+     cuser *upl=0;
+     for(up=cp->cusers;up;up=up->next) {
+       if (strcmp(up->name,acc)==0) {
+         if (upl) 
+           upl->next=up->next;
+         else
+           cp->cusers=up->next;
+	 free(up);  
+         newmsgtouser(unum, "Removed %s from %s", acc, tmps3);
+	 return;
+       }
+       upl=up;  
+     }
+     /* this SHOULD never happen */
+     return;
+   }    
+   newmsgtouser(unum, "New Accessflags for %s on %s: +%s", acc, tmps3, flagstostr(tuflags,up2->aflags));
+   return;
  } else { 
-   /* show access levels on a chan */
-   newmsgtouser(unum,"--- Accesslevels on %s ---",tmps3);   
+   /* show accessflags on a chan */
+   newmsgtouser(unum,"--- Accessflags on %s ---",tmps3);   
    i=0;
    for(up2=cp->cusers;up2;up2=up2->next) { 
     sprintf(tmps2,"»  %s\t+%s",up2->name,flagstostr(tuflags,up2->aflags));

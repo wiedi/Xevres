@@ -1,0 +1,11 @@
+access (Lvl. 0)
+-----------------------------------------
+Syntax:  access <channel> <userauth> [+|-]<flags>
+Desc.:   Can look up the access for a certain person or a string. 
+	 The information indicates level, suspension status and 
+	 level if suspended, and when the user was last seen.
+	 This flags can be used: 
+	 c=creator o=operator v=voiced b=banned a=auto
+	 To see all users, use: /msg x access <#channel> *
+Example: access #help Ruler +ao
+	 Auto-Op the User "Ruler" at "#help"

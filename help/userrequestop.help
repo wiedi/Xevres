@@ -4,11 +4,7 @@ Syntax:  requestop channel [nickname]
 Desc.:   Can be used to request op on opless channels.
          The nickname is optional, if you don't supply it, your own nick
          will be inserted.
-         "chanfix" will be used to determine whether there are regular ops on
-         the channel that could be opped. If it finds some, they (and not the
-         one requested!) will be opped. If chanfix doesn't know who should be
-         op, the requested person will be opped.
-         DO NOT abuse this feature to take over channels. DO NOT request ops
-         for channels where you aren't a regular op.
+         DO NOT abuse this feature to take over channels. 
+	 DO NOT request ops for channels where you aren't a regular op.
 Example: requestop #quake.xyz Sucker
          Would request op for "Sucker" on #quake.xyz

@@ -21,7 +21,19 @@ coded by Wiedi
 #define DEFOWNERMODE "cao"
 
 int donej=0;
-// int uplinkup;
+int uplinkup;
+
+flags tuflags[] = {
+ { ' ',	9 },
+ { 'g',	UF_GIVE },
+ { 'v',	UF_VOICE },
+ { 'a',	UF_AUTO },
+ { 'o',	UF_OP },
+ { 'i',	UF_INVITE },
+ { 'l',	UF_LOG },
+ { 'c',	UF_COOWNER },
+ { 'n',	UF_OWNER }
+};
 
 void xdummy(long unum, char *tail) {
   msgtouser(unum,"Sorry, this command is not finished yet!");
@@ -29,13 +41,14 @@ void xdummy(long unum, char *tail) {
 
 void ch_op(long unum, char *tail) {
  char tmps2[TMPSSIZE], tmps3[TMPSSIZE], tmps4[TMPSSIZE], tmps5[TMPSSIZE];
- int res; long ux;
+ int res, i, found; long un;
+ userdata *ux; channel **cx;
  cuser *up; rchan *cp;
  
  res=sscanf(tail,"%s %s %s",tmps2,tmps3,tmps4);
  if (res != 3 && res != 2) {
   msgtouser(unum,"op usage:");
-  newmsgtouser(unum,"/msg %s op <channel> [nick]",mynick);
+  newmsgtouser(unum,"/msg %s op <#channel> [nick]",mynick);
   return;
  }
  if (!(cp=ch_getchan(tmps3))) {
@@ -50,189 +63,232 @@ void ch_op(long unum, char *tail) {
    msgtouser(unum,"You don't have the permission for this");
    return;
  }
-   
  if (res == 2) {
    longtotoken(unum,tmps5,5);
  } else {
-   ux=nicktonum(tmps4);
-   if (ux<0) {
-     newmsgtouser(unum,"User %s is not on the network.",tmps4);
+   un=nicktonum(tmps4);
+   if (un<0) {
+     newmsgtouser(unum,"User %s is not on the network",tmps4);
      return;
    }
-   longtotoken(ux,tmps5,5); 
+   ux=getudptr(un);
+   found=0;
+   cx=(channel **)(ux->chans.content);
+   for (i=0;i<ux->chans.cursi;i++) {
+     if (strcmp(tmps3,cx[i]->name)==0) {
+       found=1;
+       break;
+     }
+   }
+   if (found==0) {
+     newmsgtouser(unum,"User %s is not on %s",tmps4,tmps3);
+     return;
+   }    
+   longtotoken(un,tmps5,5); 
  }
  sendtouplink("%sAAB M %s +o %s\r\n",servernumeric,tmps3,tmps5); 
  sim_mode(tmps3,"+o",tokentolong(tmps5));
  fflush(sockout);
- msgtouser(unum,"Here is the op");
-   
+ msgtouser(unum,"Done"); 
 }
 
 void ch_voice(long unum, char *tail) {
  char tmps2[TMPSSIZE], tmps3[TMPSSIZE], tmps4[TMPSSIZE], tmps5[TMPSSIZE];
- int res2;
- long ux;
+ int res, i, found; long un;
+ userdata *ux; channel **cx;
+ cuser *up; rchan *cp;
  
- res2=sscanf(tail,"%s %s %s",tmps2,tmps3,tmps4);
- if (res2 != 3 && res2 != 2) {
+ res=sscanf(tail,"%s %s %s",tmps2,tmps3,tmps4);
+ if (res != 3 && res != 2) {
   msgtouser(unum,"voice usage:");
-  msgtouser(unum,"/msg X voice <channel> [nick]");
+  newmsgtouser(unum,"/msg %s voice <#channel> [nick]",mynick);
   return;
  }
- if (uhaccoc(unum2auth(unum),tmps3,'v')==0 || uhaccoc(unum2auth(unum),tmps3,'o')==0 || uhaccoc(unum2auth(unum),tmps3,'c')==0 || checkauthlevel(unum,100)) {
-  if (res2 == 2) {
-   longtotoken(unum,tmps5,5);
-  } else {
-   if (uhaccoc(unum2auth(unum),tmps3,'o')!=0 && uhaccoc(unum2auth(unum),tmps3,'c')!=0 && !checkauthlevel(unum,300)) {
-    msgtouser(unum,"You can only voice yourself!");
-    return;
-   } 
-   ux=nicktonum(tmps4);
-   if (ux<0) {
-    newmsgtouser(unum,"User %s is not on the network.",tmps4);
-    return;
-   }
-   longtotoken(ux,tmps5,5); 
-  }
-  sendtouplink("%sAAB M %s +v %s\r\n",servernumeric,tmps3,tmps5); 
-  sim_mode(tmps3,"+v",tokentolong(tmps5));
-  fflush(sockout);
-  msgtouser(unum,"Here is your voice");
+ if (!(cp=ch_getchan(tmps3))) {
+   newmsgtouser(unum,"I am not on %s",tmps3);
+   return;
+ }
+ if (!(up=ch_getchanuser(cp,unum2auth(unum)))) {
+   newmsgtouser(unum,"You are not known on %s",tmps3);
+   return;
  }  
+ if (!UHasOp(up) && !UHasCoowner(up) && !UHasOwner(up) && !UHasVoice(up) && !checkauthlevel(unum,200)) {
+   msgtouser(unum,"You don't have the permission for this");
+   return;
+ }
+ if (res == 2) {
+   longtotoken(unum,tmps5,5);
+ } else {
+   un=nicktonum(tmps4);
+   if (un<0) {
+     newmsgtouser(unum,"User %s is not on the network",tmps4);
+     return;
+   }
+   ux=getudptr(un);
+   found=0;
+   cx=(channel **)(ux->chans.content);
+   for (i=0;i<ux->chans.cursi;i++) {
+     if (strcmp(tmps3,cx[i]->name)==0) {
+       found=1;
+       break;
+     }
+   }
+   if (found==0) {
+     newmsgtouser(unum,"User %s is not on %s",tmps4,tmps3);
+     return;
+   }    
+   longtotoken(un,tmps5,5); 
+ }
+ sendtouplink("%sAAB M %s +v %s\r\n",servernumeric,tmps3,tmps5); 
+ sim_mode(tmps3,"+v",tokentolong(tmps5));
+ fflush(sockout);
+ msgtouser(unum,"Done"); 
 }
 
 void ch_invite(long unum, char *tail) {
  char tmps2[TMPSSIZE], tmps3[TMPSSIZE], tmps4[TMPSSIZE];
- int res2;
- long ux;
+ int res; long ux;
+ cuser *up; rchan *cp;
  
- res2=sscanf(tail,"%s %s %s",tmps2,tmps3,tmps4);
- if (res2 != 3 && res2 != 2) {
+ res=sscanf(tail,"%s %s %s",tmps2,tmps3,tmps4);
+ if (res != 3 && res != 2) {
   msgtouser(unum,"invite usage:");
-  msgtouser(unum,"/msg X invite <channel> [nick]");
+  newmsgtouser(unum,"/msg %s invite <#channel> [nick]",mynick);
   return;
  }
- if (uhaccoc(unum2auth(unum),tmps3,'v')==0 || uhaccoc(unum2auth(unum),tmps3,'o')==0 || uhaccoc(unum2auth(unum),tmps3,'c')==0 || checkauthlevel(unum,300)) {
-  if (res2 == 2) {
+ 
+ if (!(cp=ch_getchan(tmps3))) {
+   newmsgtouser(unum,"I am not on %s",tmps3);
+   return;
+ }
+ if (!(up=ch_getchanuser(cp,unum2auth(unum))) && !UHasInvite(up) && !UHasVoice(up) && !UHasOp(up) && !UHasCoowner(up) && !UHasOwner(up) && !checkauthlevel(unum,200)) {
+   msgtouser(unum,"You don't have the permission");
+   return;
+ }
+ if (res == 2) {
    numtonick(unum,tmps4);
-  } else {
-   if (uhaccoc(unum2auth(unum),tmps3,'o')!=0 && uhaccoc(unum2auth(unum),tmps3,'c')!=0 && !checkauthlevel(unum,300)) {
-    msgtouser(unum,"You can only invite yourself!");
+ } else {
+   if (!UHasOp(up) && !UHasCoowner(up) && !UHasOwner(up) && !checkauthlevel(unum,300)) {
+    msgtouser(unum,"You don't have the permission to invite other users");
     return;
    } 
    ux=nicktonum(tmps4);
    if (ux<0) {
-    newmsgtouser(unum,"User %s is not on the network.",tmps4);
+    newmsgtouser(unum,"User %s is not on the network",tmps4);
     return;
    }
   }
   sendtouplink("%sAAB I %s :%s\r\n",servernumeric,tmps4,tmps3); 
   fflush(sockout);
-  msgtouser(unum,"Please come in.");
- }  
+  msgtouser(unum,"Done"); 
 }
 
 void ch_topic(long unum, char *tail) {
- char tmps2[TMPSSIZE], tmps3[TMPSSIZE], tmps4[TMPSSIZE], tmps5[TMPSSIZE];
- int res2;
- res2=sscanf(tail,"%s %s %[^\n]",tmps2,tmps3,tmps4);
- if (res2 != 3) {
+ char tmps2[TMPSSIZE], tmps3[TMPSSIZE], tmps4[TMPSSIZE];
+ int res;
+ cuser *up; rchan *cp;
+ 
+ res=sscanf(tail,"%s %s %[^\n]",tmps2,tmps3,tmps4);
+ if (res != 3) {
   msgtouser(unum,"topic usage:");
-  msgtouser(unum,"/msg X topic <channel> <topic>");
+  newmsgtouser(unum,"/msg %s topic <#channel> <topic>",mynick);
   return;
  }
- if (uhaccoc(unum2auth(unum),tmps3,'v')==0 || uhaccoc(unum2auth(unum),tmps3,'o')==0 || uhaccoc(unum2auth(unum),tmps3,'c')==0 || checkauthlevel(unum,300)) {
-  mysql_escape_string(tmps5,tmps4,strlen(tmps4));
-  sprintf(tmps2,"UPDATE Xchannels SET topic='%s' WHERE xchan='%s'", tmps5, tmps3);
-  res2=mysql_query(&sqlcon,tmps2);
-  sendtouplink("%sAAB T %s :%s\r\n",servernumeric,tmps3,tmps4); 
-  sim_topic(tmps3,tmps4);
-  fflush(sockout);
-  msgtouser(unum,"Topic set");
- } else {
-  msgtouser(unum,"Sorry, you don't have the permission on this chan.");
- } 
+ 
+ if (!(cp=ch_getchan(tmps3))) {
+   newmsgtouser(unum,"I am not on %s",tmps3);
+   return;
+ }
+ if (!(up=ch_getchanuser(cp,unum2auth(unum))) && !UHasOp(up) && !UHasCoowner(up) && !UHasOwner(up) && !checkauthlevel(unum,300)) {
+   msgtouser(unum,"You don't have the permission");
+   return;
+ }
+ sendtouplink("%sAAB T %s :%s\r\n",servernumeric,tmps3,tmps4); 
+ sim_topic(tmps3,tmps4);
+ fflush(sockout);
+ msgtouser(unum,"Done");
 }
 
 void ch_kick(long unum, char *tail) {
  char tmps2[TMPSSIZE], tmps3[TMPSSIZE], tmps4[TMPSSIZE], tmps5[TMPSSIZE], uhost[TMPSSIZE];
- int res2, res, i;
+ int res, i; unsigned long j; 
  channel *a; chanuser *b; userdata *c;
- unsigned long j; 
+ cuser *up; rchan *cp;
  
- res2=sscanf(tail,"%s %s %s %[^\n]",tmps2,tmps3,tmps4, tmps5);
- if (res2 < 3) {
-  msgtouser(unum,"kick usage:");
-  msgtouser(unum,"Operator: /msg X kick <channel> <nick> [reason]");
-  msgtouser(unum,"Creator:  /msg X kick <channel> <nick>[!ident@host] [reason] (Note: you can use wildcards)");
-  return;
+ res=sscanf(tail,"%s %s %s %[^\n]",tmps2,tmps3,tmps4, tmps5);
+ if (res < 3) {
+   msgtouser(unum,"kick usage:");
+   newmsgtouser(unum,"Operator:  /msg %s kick <#channel> <nick> [reason]",mynick);
+   newmsgtouser(unum,"[Co]Owner: /msg %s kick <#channel> <nick>[!ident@host] [reason] (Note: you can use wildcards)",mynick);
+   return;
  }
- toLowerCase(tmps4);
- if (res2 == 3) { 
-  numtonick(unum,tmps2);
-  sprintf(tmps5,"requested by %s",tmps2); }
- if (uhaccoc(unum2auth(unum),tmps3,'c')==0 || checkauthlevel(unum,500)) {
-  /* rock n roll */
-  toLowerCase(tmps3);
-  a=getchanptr(tmps3);
-  if (a==NULL) { return; /* should never happen */ }
-  b=(chanuser *)a->users.content; strcpy(tmps2,""); res=0; i=0;
-  for (j=0;j<a->users.cursi;j++) {
-   c=getudptr(b[j].numeric);
-   if (ischarinstr('!',tmps4)) {
-    /* nick!ident@host */
-    sprintf(uhost,"%s!%s@%s",c->nick,c->ident,c->host);
-    if (match2strings(tmps4,uhost)) {
-     if (ischarinstr('k',c->umode) || ischarinstr('X',c->umode)) {
-      /* do not much */
-     } else {
-      longtotoken(c->numeric,tmps2,5);
-      sendtouplink("%sAAB K %s %s :%s\r\n",servernumeric,tmps3,tmps2,tmps5); 
-      sim_part(tmps3,c->numeric);
-      i++;
-     } 
-    } 
-   } else { 
-    /* nick */
-    numtonick(b[j].numeric,tmps2);
-    if (match2strings(tmps4,tmps2)) {
-     if (ischarinstr('k',c->umode) || ischarinstr('X',c->umode)) {
-      /* do even less */
-     } else {
-      longtotoken(c->numeric,tmps2,5);
-      sendtouplink("%sAAB K %s %s :%s\r\n",servernumeric,tmps3,tmps2,tmps5); 
-      sim_part(tmps3,c->numeric);
-      i++;
-     } 
-    }
-   } 
-   res++;
-  }
-  newmsgtouser(unum,"Kicked %i users from %s",i,tmps3); 
- } else if  (uhaccoc(unum2auth(unum),tmps3,'o')==0 || checkauthlevel(unum,300)) {
-  /* normal kick */
+ 
+ if (!(cp=ch_getchan(tmps3))) {
+   newmsgtouser(unum,"I am not on %s",tmps3);
+   return;
+ }
+ if (!(up=ch_getchanuser(cp,unum2auth(unum))) && !UHasOp(up) && !UHasCoowner(up) && !UHasOwner(up) && !checkauthlevel(unum,400)) {
+   msgtouser(unum,"You don't have the permission");
+   return;
+ }
  toLowerCase(tmps3);
-  a=getchanptr(tmps3);
-  if (a==NULL) { return; /* should never happen */ }
-  b=(chanuser *)a->users.content; strcpy(tmps2,""); res=0; i=0;
-  for (j=0;j<a->users.cursi;j++) {
-   c=getudptr(b[j].numeric);
-   numtonick(b[j].numeric,tmps2);
-   if (match2strings(tmps4,tmps2)) {
-    if (ischarinstr('k',c->umode) || ischarinstr('X',c->umode)) {
-     /* do even less */
-    } else {
-     longtotoken(c->numeric,tmps2,5);
-     sendtouplink("%sAAB K %s %s :%s\r\n",servernumeric,tmps3,tmps2,tmps5); 
-     sim_part(tmps3,c->numeric);
-     msgtouser(unum,"Kicked away!");
-     break;
-    } 
-   } 
-  } 
-  msgtouser(unum,"User not on channel.");
+ toLowerCase(tmps4);
+ if (res == 3) { 
+   numtonick(unum,tmps2);
+   sprintf(tmps5,"requested by %s",tmps2); 
+ }
+ if (UHasCoowner(up) || UHasOwner(up) || checkauthlevel(unum,500)) {
+   /* rock n roll */
+   a=getchanptr(tmps3);
+   if (a==NULL) { return; /* should never happen */ }
+   b=(chanuser *)a->users.content; strcpy(tmps2,""); res=0; i=0;
+   for (j=0;j<a->users.cursi;j++) {
+     c=getudptr(b[j].numeric);
+     if (ischarinstr('!',tmps4)) {
+       /* nick!ident@host */
+       sprintf(uhost,"%s!%s@%s",c->nick,c->ident,c->host);
+       if (match2strings(tmps4,uhost)) {
+         if (!ischarinstr('k',c->umode) && !ischarinstr('X',c->umode)) {
+           longtotoken(c->numeric,tmps2,5);
+           sendtouplink("%sAAB K %s %s :%s\r\n",servernumeric,tmps3,tmps2,tmps5); 
+           sim_part(tmps3,c->numeric);
+           i++;
+         } 
+       } 
+     } else { 
+       /* nick */
+       numtonick(b[j].numeric,tmps2);
+       if (match2strings(tmps4,tmps2)) {
+         if (!ischarinstr('k',c->umode) && !ischarinstr('X',c->umode)) {
+           longtotoken(c->numeric,tmps2,5);
+           sendtouplink("%sAAB K %s %s :%s\r\n",servernumeric,tmps3,tmps2,tmps5); 
+           sim_part(tmps3,c->numeric);
+           i++;
+         } 
+       }
+     } 
+     res++;
+   }
+   newmsgtouser(unum,"Kicked %i users from %s",i,tmps3); 
  } else {
-  msgtouser(unum,"Sorry, you don't have the permission on this chan.");
+   /* normal kick */
+   a=getchanptr(tmps3);
+   if (a==NULL) { return; /* should never happen */ }
+   b=(chanuser *)a->users.content; strcpy(tmps2,""); res=0; i=0;
+   for (j=0;j<a->users.cursi;j++) {
+     c=getudptr(b[j].numeric);
+     numtonick(b[j].numeric,tmps2);
+     if (match2strings(tmps4,tmps2)) {
+       if (!ischarinstr('k',c->umode) && !ischarinstr('X',c->umode)) {
+         longtotoken(c->numeric,tmps2,5);
+         sendtouplink("%sAAB K %s %s :%s\r\n",servernumeric,tmps3,tmps2,tmps5); 
+         sim_part(tmps3,c->numeric);
+         msgtouser(unum,"Done");
+         break;
+       } 
+     } 
+   } 
+   msgtouser(unum,"User not on channel");
  } 
 }
 
@@ -273,108 +329,66 @@ void ch_set(long unum, char *tail) {
 }
 
 void ch_access(long unum, char *tail) {
- char tmps2[TMPSSIZE], tmps3[TMPSSIZE], tmps4[TMPSSIZE], tmps5[TMPSSIZE], tmps7[TMPSSIZE], uflags[TMPSSIZE];
- int res2, t1, t2, xist;
- MYSQL_RES *myres; MYSQL_ROW myrow;
- res2=sscanf(tail,"%s %s %s %s",tmps2,tmps3,tmps4,tmps5);
-
- if (res2 == 4) {
-  if (uhaccoc(unum2auth(unum),tmps3,'c')==0 || checkauthlevel(unum,800)){
-   if (uhacc(tmps4)==0) {
-    /* Get access modes for user */
-    sprintf(tmps2,"SELECT * from Xacclevs where xuser='%s' and xchan='%s'",tmps4, tmps3);
-    res2=mysql_query(&sqlcon,tmps2);
-    if (res2!=0) {
-     putlog("!!! Could not read X acclevs database !!!");
-     msgtouser(unum,"An error occured.");
-     return;
-    }
-    myres=mysql_store_result(&sqlcon);
-    xist=-1;
-    strcpy(uflags,"");
-    while ((myrow=mysql_fetch_row(myres))) {
-     strcpy(uflags,myrow[3]);
-     xist++;
-    }
-    strcpy(tmps7,uflags);
-    /* parse new flags */  
-    t1=0; t2=0;
-    while (tmps5[t2]!='\0') {
-     if (tmps5[t2]!='+' && tmps5[t2]!='-' && tmps5[t2]!='c' && tmps5[t2]!='o' && tmps5[t2]!='v' &&  tmps5[t2]!='b' && tmps5[t2]!='a'){
-      msgtouser(unum,"Unknown accessflag!");
-      return;
-     }    
-     if ((tmps5[t2]=='+') || (tmps5[t2]=='-')) {
-      if (tmps5[t2]=='+') { t1=1; } else { t1=0; }
-     } else {
-      if (t1==1) {
-       if (strlen(uflags)<(MAXUMODES-1)) {
-        if (!ischarinstr(tmps5[t2],uflags)) { appchar(uflags,tmps5[t2]); }
+ char tmps2[TMPSSIZE], tmps3[TMPSSIZE], tmps4[TMPSSIZE], tmps5[TMPSSIZE], acc[NICKLEN+1];
+ int res, t1, t2, a=0, d=0, i;
+ cuser *up, *up2; rchan *cp;
+ 
+ res=sscanf(tail,"%s %s %s %s",tmps2,tmps3,tmps4,tmps5);
+ if ((res !=4) && (res !=2)) {
+   msgtouser(unum,"access usage:");
+   newmsgtouser(unum,"/msg %s access <#channel> [<nickname|#account> <+|-><flags>]",mynick);
+   newmsgtouser(unum,"For more information do /msg %s help access",mynick);
+   return;
+ }
+ 
+ if (!(cp=ch_getchan(tmps3))) {
+   newmsgtouser(unum,"I am not on %s",tmps3);
+   return;
+ }
+ 
+ if (!(up=ch_getchanuser(cp,unum2auth(unum)))) {
+   newmsgtouser(unum,"You are not known on %s",tmps3);
+   return;
+ }
+ 
+ if (res == 4) {
+   if (UHasOp(up) || UHasCoowner(up) || UHasOwner(up) || checkauthlevel(unum,800)){
+     t1=0; t2=0;
+     while (tmps5[t2]!='\0') {
+       if ((tmps5[t2]=='+') || (tmps5[t2]=='-')) {
+         if (tmps5[t2]=='+') { t1=1; } else { t1=0; }
+       } else {
+         if (t1==1) {
+           a|=flagstoint(tuflags,&tmps5[t2]);
+         } else {
+           d|=flagstoint(tuflags,&tmps5[t2]);
+         }
        }
-      } else {
-       delchar(uflags,tmps5[t2]);
-      }
+       t2++;
      }
-     t2++;
-    }
-    /* update flags to sql db */
-    if (strcmp(uflags,"")==0) {
-     if (strcmp(tmps7,"")!=0) {
-      sprintf(tmps2,"delete from Xacclevs where xchan='%s' and xuser='%s'",tmps3, tmps4);
-      res2=mysql_query(&sqlcon,tmps2);
-      newmsgtouser(unum,"User %s removed from channel",tmps4);
-      return;
+     if (!a && !d) {
+       msgtouser(unum,"No valid access flags given");
+       return;
+     }
+     if (tmps3[0] == '#') {
+       /* account */
      } else {
-      msgtouser(unum,"User not on access list!");
-      return;
-     }  
-    } else {
-     if (strcmp(tmps7,"")!=0) {
-      /* update */
-      sprintf(tmps2,"UPDATE Xacclevs SET accesslevels='%s' WHERE xuser='%s' and xchan='%s'",uflags, tmps4, tmps3);
-      res2=mysql_query(&sqlcon,tmps2);
-      msgtouser(unum,"Accesslevel updated");
-      return;
-     } else {
-      /* add new */
-      sprintf(tmps2,"INSERT INTO Xacclevs (xuser, xchan, accesslevels) VALUES ('%s','%s','%s')",tmps4, tmps3, uflags);
-      res2=mysql_query(&sqlcon,tmps2);
-      msgtouser(unum,"User added to accesslist");
-      return;
-     }  
-    } 
-   } else {
-    msgtouser(unum,"Unknown user account!");
-   }
-  }   
- } else if (res2 == 2) { 
-  if (uikoc(unum2auth(unum),tmps3)==0 || checkauthlevel(unum,500)){
+       /* need to get account */
+     }
+     /* change flags */      
+   }  
+ } else { 
    /* show access levels on a chan */
    newmsgtouser(unum,"--- Accesslevels on %s ---",tmps3);   
-   sprintf(tmps2,"SELECT * from Xacclevs where xchan ='%s'",tmps3);
-   res2=mysql_query(&sqlcon,tmps2);
-   if (res2!=0) {
-    putlog("!!! Could not read X acclevs database !!!");
-    msgtouser(unum,"An error occured.");
-    return;
-   }
-   myres=mysql_store_result(&sqlcon);
-   while ((myrow=mysql_fetch_row(myres))) {
-    sprintf(tmps2,"»  %s\t+%s",myrow[1],myrow[3]);
+   i=0;
+   for(up2=cp->cusers;up2;up2=up2->next) { 
+    sprintf(tmps2,"»  %s\t+%s",up2->name,flagstostr(tuflags,up2->aflags));
     printhelp(unum,tmps2);
+    i++;
    }
-   mysql_free_result(myres);
-   msgtouser(unum,"--- End of List ---");
+   newmsgtouser(unum,"--- End of List (%i user%s)---",i,(i>1) ? "s" : "");
    return;
-  } else {
-   msgtouser(unum,"Sorry, you don't have permission to view the accesslevels here");
-  } 
- } else {
-  msgtouser(unum,"access usage:");
-  msgtouser(unum,"/msg X access <channel> <userauth> [+|-]<flags>");
-  msgtouser(unum,"Flags can be: c=creator o=operator v=voiced b=banned a=auto");
-  return;
- }
+ } 
 }
 
 void ch_chanmode(long unum, char *tail) {
@@ -736,7 +750,7 @@ void ch_readdb(void) {
   while ((myrow2=mysql_fetch_row(myres2))) {
     up=(cuser*)malloc(sizeof(cuser));
     mystrncpy(up->name,myrow2[1],NICKLEN+1);
-    up->aflags=atoi(myrow2[2]);
+    up->aflags=atoi(myrow2[3]);
     if (!cp->cusers)
      up->next=NULL;
     else

@@ -1,3 +1,7 @@
+Tue Oct  5 21:16:25 CEST 2004	Wiedi	<wiedi@elbone.net>
+	* Rewrote OP, VOICE, INVITE, TOPIC, KICK and started rewriting ACCESS commands for
+					the channel module.
+
 Sun Sep 26 01:26:39 CEST 2004	Wiedi	<wiedi@elbone.net>
 	* Started reimplementing the channel modul in a much cleaner, faster an less memory 
 					consuming way after i got inspired by the source of

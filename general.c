@@ -786,4 +786,33 @@ void sim_mode(char *xchan, char *mode, long num) {
  }
 }
 
+/* inspired by multiserv, thx to skx */
 
+const char *flagstostr(flags tbl[], int i) {
+ int a,b;
+ int size=tbl[0].v+1;
+ static char c[129];
+  
+ for(a=1,b=0;a<size;a++) {
+   if (i & tbl[a].v) {
+     c[b]=tbl[a].c;
+     b++;
+   }
+ }
+ c[b]='\0';
+ return (char*)c;
+}
+
+int flagstoint(flags tbl[], char *c) {
+ int i=0,a,b;
+ int size=tbl[0].v+1;
+
+ for(b=0;b<strlen(c);b++) {
+   for(a=1;a<size;a++) {
+     if (c[b] == tbl[a].c) {
+       i |= tbl[a].v;
+     }
+   }
+ }
+ return i;
+}

@@ -91,6 +91,8 @@ typedef struct reggedchan {
 
 rchan *rchans;
 
+extern flags uflags[];
+
 
 /* database things */
 void ch_readdb(void);

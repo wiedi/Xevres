@@ -637,6 +637,8 @@ void sim_join(char *xchan, long num);
 void sim_part(char *xchan, long num);
 void sim_topic(char *xchan, char *topic);
 void sim_mode(char *xchan, char *mode, long num);
+const char *flagstostr(flags tbl[], int i);
+int flagstoint(flags tbl[], char *c);
 /* End of general.c */
 
 /* serverhandlers.c */

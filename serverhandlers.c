@@ -50,7 +50,7 @@ void handlenickmsg() {
     if (strlen(params[2])>NICKLEN) {
       putlog("!!! handlenickmsg/ren: Nick exceeds NICKLEN: %s !!!",lastline);
     }
-    toLowerCase(params[2]);
+    toLowerCase2(params[2]);
     tmpl=tokentolong(sender);
     a=getudptr(tmpl);
     if (a==NULL) {
@@ -138,7 +138,7 @@ void handlenickmsg() {
     strcpy(realiptmp,params[rnstart-2]);
     normnum(numtmp);
     tmpl=tokentolong(realiptmp);  /* FIXMEFORIPV6 */
-    toLowerCase(params[2]);
+    toLowerCase2(params[2]);
     thisisnotgood=nicktonu2(params[2]);
     if (thisisnotgood>=0) { /* Nick collission */
       long ting2; userdata *ting3;

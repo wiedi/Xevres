@@ -84,7 +84,7 @@ void c4_chmsg(long unum, char *chan, char *tail) {
   if (tail[0] == '!') {
     res2=sscanf(tail,"%s %s",tmps2,tmps3);
     if (res2 == 1) {
-      if ((tail[1] == '1') || (tail[1] == '2') || (tail[1] == '3') || (tail[1] == '4') || (tail[1] == '5') || (tail[1] == '6') || (tail[1] == '7')) {
+      if (((tail[1] == '1') || (tail[1] == '2') || (tail[1] == '3') || (tail[1] == '4') || (tail[1] == '5') || (tail[1] == '6') || (tail[1] == '7')) && tail[2] == '\0') {
         /* !1 - !7 */
         if ((gamez[cid].lastmove==2) ? gamez[cid].pl1==unum : gamez[cid].pl2==unum) {
           /*play*/

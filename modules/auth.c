@@ -78,13 +78,14 @@ void doxauth(long unum, char *tail) {
 }
 
 void doxhello(long unum, char *tail) {
-  char tmps2[TMPSSIZE], tmps3[TMPSSIZE], tmps4[TMPSSIZE];
+  char tmps2[TMPSSIZE], tmps3[TMPSSIZE], tmps4[TMPSSIZE], tmps5[TMPSSIZE];
   userdata *reqrec;
   int res2;
   long nettime;
   MYSQL_RES *myres; MYSQL_ROW myrow;
   reqrec=getudptr(unum);
-  sprintf(tmps2,"SELECT count(*) from Xusers where username='%s'",reqrec->nick);
+  mysql_escape_string(tmps5,reqrec->nick,strlen(reqrec->nick));
+  sprintf(tmps2,"SELECT count(*) from Xusers where username='%s'",tmps5);
   res2=mysql_query(&sqlcon,tmps2);
   myres=mysql_store_result(&sqlcon);
   myrow=mysql_fetch_row(myres);
@@ -95,10 +96,10 @@ void doxhello(long unum, char *tail) {
     if (!ischarinstr('r',up->umode)) {
      createrandompw(tmps4,8);
      nettime=getnettime();
-     sprintf(tmps3,"INSERT INTO Xusers (username, password, authlevel, lastauthed) VALUES ('%s','%s',1,%ld)",reqrec->nick,tmps4,nettime);
+     sprintf(tmps3,"INSERT INTO Xusers (username, password, authlevel, lastauthed) VALUES ('%s','%s',1,%ld)",tmps5,tmps4,nettime);
      res2=mysql_query(&sqlcon,tmps3);
      msgtouser(unum,"Hi, welcome in our Network! Your account has been created");
-     sprintf(tmps3,"Your username is %s",reqrec->nick);
+     sprintf(tmps3,"Your username is %s",tmps5);
      msgtouser(unum,tmps3);
      sprintf(tmps3,"Your password is %s",tmps4);
      msgtouser(unum,tmps3);

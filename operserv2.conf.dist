@@ -1,0 +1,94 @@
+# This is an example-Configfile for Operservice 2
+# The structure of this file is very simple:
+# Lines beginning with a '#' are considered as a comment and therefore ignored.
+# All other lines should either be empty or contain something like:
+# setting=value
+# do not insert spaces before or after the '='
+# OK, so lets get right into the settings:
+
+# The nickname under which the Service is reachable
+mynick=O2
+
+# The servername of the Service
+myname=someserver.somenet.org
+
+# The server which i shall connect to (either hostname or IP)
+conto=localhost
+
+# The port to use for this connection (ircu defaults to listening on port 4400)
+conport=4400
+
+# The password for the connection to the ircd
+conpass=yeahsure
+
+# The numeric the service shall use. This must be unique on the network!
+# Valid values for this are 0-63 on ircu 2.10.07, and 0-4095 on ircu 2.10.10
+numeric=63
+
+# The service uses mysql for a lot of things.
+# Set the following to the mysql-server you want to connect to
+sqlhost=localhost
+
+# The port for MySQL
+sqlport=3306
+
+# Username for MySQL
+sqluser=operserv
+
+# Password for MySQL
+sqlpass=yeahsure
+
+# The database the service shall use
+sqldb=operserv
+
+# Warn about Mirkforce if a subnet exceeds this many connections.
+# Note that this setting obsoletes the old "clonewarn" setting, as a single
+# IPv4 host is basically the same as a /32 subnet...
+# There are 33 variables, mf4warn0 to mf4warn32.
+# You can set the values for every subnettype here, or just let O fill in
+# its own values. If you set a value to 0, O will keep its mouth shut about it.
+mf4warn24=100
+mf4warn32=5
+
+# Start counting subnets with this mask. The old counting always counted /24
+# subnets, you can now change that. (Of course it will detect and warn about
+# SMALLER subnets too)
+ipv4sncstartmask=19
+
+# The logfile.
+logfile=Operservice.log
+
+# Where the helpfiles can be found (don't forget to add a "/" at the end)
+helppath=help/
+
+# If there are other services on the network, they probably will not respond
+# to querys like /stats P, preventing proper function of network-lag-detection
+# and therefore settime. Add a "noreplytoping"-Line for each of those.
+# (only enter one server in each line!)
+noreplytoping=badserver.quakenet.eu.org
+
+# Module path - should be absolute, with trailing slash
+modpath=/home/dummy/O/modules/
+
+# Filesuffix of modules - usually .so
+modend=.so
+
+# Automatically loaded modules (on startup) - one per line!
+loadmod=trustcommands
+loadmod=glinecommands
+loadmod=clearchan
+loadmod=requestop
+loadmod=secretchannellist
+loadmod=opercommands
+loadmod=spewcommands
+
+# Automatically sync glines to (re-)connecting servers?
+glineautosync=1
+
+# Which format shall the timestamps in Os logfile and on the console be?
+# This is passed as argument to strftime(), so if you fuck this up, O will most
+# likely crash badly. See the manpage for strftime for information on what you
+# can use here. the default will create timestamps of the form [DDMMYY.HHMMSS]
+logtimestampformat=%d%m%y.%H%M%S
+
+# thats it, end of example config.

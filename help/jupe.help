@@ -1,0 +1,14 @@
+jupe (Lvl. 900, Opers only)
+-----------------------------------------
+Syntax:  jupe servername numeric
+Desc.:   Jupes a server. This will prevent the real server from connecting to
+         the net by faking that the server is already connected to operserv.
+         The jupe will automatically expire after 24 hours, or if somebody
+         /SQUITs the server.
+         Note that the numeric-parameter does NOT need to be the real numeric
+         of the server you want to jupe, you can take any numeric that is not
+         in use on the net. Valid ranges are 1-63 on an ircu 2.10.07 based net,
+         and 1-4095 on an ircu 2.10.10 based net.
+         You HAVE to type the full servername, you cannot abbreviate it with
+         e.g. va.us*.
+Example: jupe va.us.quakenet.eu.org 666

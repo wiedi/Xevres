@@ -1,0 +1,11 @@
+serverlist (Lvl. 0, Opers only)
+-----------------------------------------
+Syntax:  serverlist [sort] [pattern]
+Desc.:   Lists connected servers, sort parameters are :
+   -n : sort by numeric, -h : sort by last part of servername
+   -u : unsorted (the default)
+Examples:
+   serverlist
+      Displays all connected servers
+   serverlist -n *.uk.*
+      Displays all connected uk servers, ordered by numeric.

@@ -1,0 +1,9 @@
+opchan (Lvl. 900, Opers only)
+-----------------------------------------
+Syntax:  opchan channel nickname
+Desc.:   Will op nickname on channel.
+         This is done through a hacked mode, so everyone that has +s set will
+         see a notice similiar to this: "Hack on #xy by operserv.some.net:
+         MODE +o someguy"
+Example: opchan #feds Speednet
+         Would op Speednet on #feds

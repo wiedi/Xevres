@@ -739,12 +739,16 @@ char *unum2nick(long unum) {
 void sim_join(char *xchan, long num) {
  channel *ctmp;
  
- if (!chanexists(xchan)) {
-  newchan(xchan,0);
+ if (strcmp(xchan,"0")==0) { 
+   deluserfromallchans(num);
+   return;
  }
+ if (!chanexists(xchan)) 
+   newchan(xchan,0);
  addusertochan(xchan,num);
  ctmp=getchanptr(xchan);
- if (ctmp!=NULL) { addchantouser2(num,ctmp); }
+ if (ctmp!=NULL) 
+   addchantouser2(num,ctmp);
 } 
 
 void sim_part(char *xchan, long num) {

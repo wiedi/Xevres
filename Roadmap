@@ -10,7 +10,7 @@ V 1.8
 V 1.6 
 -> tcl: add some tcl functions
 -> waldi: 20% story done
--> stats: basic statistic module (mrtg)
+-> stats: basic statistic module (rrdtool)
 -> relay: basic relay functions
 -> gamestats: can use relay module
 
@@ -25,20 +25,17 @@ V 1.2
 
 V 1.0 [MAJOR]
 -> chan: latest bug fixes
--> vhost: finished
+-> main: code cleanups
 
 V 0.9
--> chan: ch_domode() function
--> chan: channel mode command
--> chan: ban handling
 -> auth: rewrite module
--> chan: basic chan forwarding module
--> vhost: basic vhost module
--> w0nko: support for topic burst and new deaf mode
+-> chan: complete rewrite
+-> connect4: fix memmory allocation
+-> main: can be launched into background
 
 V 0.8.2 [WE ARE HERE]
 -> w0nko: support cmode F,O
--> mail: modules can have fake clients
+-> main: modules can have fake clients
 -> connect4: finished
 -> chan: more bugfixes
 -> auth: fix suspend user cmd

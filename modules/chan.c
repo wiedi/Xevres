@@ -2,26 +2,17 @@
 xevres channel module
 coded by Wiedi
 
-known bugs:
- o-> there are some commands that send userinput direct to the sql server! *security problem* 
 */
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stddef.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <ctype.h>
 #include <string.h>
-#include <time.h>
-#include <unistd.h>
-#include <signal.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <dlfcn.h>
+#ifndef WE_R_ON_BSD
+#include <malloc.h>
+#endif
+#ifdef USE_DOUGLEA_MALLOC
+#include "dlmalloc/malloc.h"
+#endif
 #include "globals.h"
 #include "chan.h"
 #define MODNAM "chan"
@@ -237,11 +228,35 @@ void ch_ban(long unum, char *tail) {
   msgtouser(unum,"Sorry, this command is not finished yet!");
 }
 
-void ch_clear(long unum, char *tail) {
+void ch_unban(long unum, char *tail) {
+  msgtouser(unum,"Sorry, this command is not finished yet!");
+}
+
+void ch_unbanall(long unum, char *tail) {
+  msgtouser(unum,"Sorry, this command is not finished yet!");
+}
+
+void ch_deopall(long unum, char *tail) {
+  msgtouser(unum,"Sorry, this command is not finished yet!");
+}
+
+void ch_clearchan(long unum, char *tail) {
   msgtouser(unum,"Sorry, this command is not finished yet!");
 }
 
 void ch_recover(long unum, char *tail) {
+  msgtouser(unum,"Sorry, this command is not finished yet!");
+}
+
+void ch_chanflags(long unum, char *tail) {
+  msgtouser(unum,"Sorry, this command is not finished yet!");
+}
+
+void ch_chaninfo(long unum, char *tail) {
+  msgtouser(unum,"Sorry, this command is not finished yet!");
+}
+
+void ch_set(long unum, char *tail) {
   msgtouser(unum,"Sorry, this command is not finished yet!");
 }
 
@@ -429,13 +444,6 @@ void ch_unsuspend(long unum, char *tail) {
   msgtouser(unum,"Sorry, this command is not finished yet!");
 }
 
-void ch_createdb(long unum, char *tail) {
-  msgtouser(unum,"Attempting to make the X channel database");
-  mysql_query(&sqlcon,"CREATE TABLE Xchannels (xchan varchar(200) NOT NULL, owner varchar(40) NOT NULL, suspendlevel int(11) DEFAULT '0' NOT NULL, cdate bigint, topic varchar(255), modes varchar(15), PRIMARY KEY (xchan), UNIQUE xchan (xchan))");
-  mysql_query(&sqlcon,"CREATE TABLE Xacclevs (aid int(11) UNSIGNED NOT NULL AUTO_INCREMENT, xuser varchar(40) NOT NULL, xchan varchar(200) NOT NULL, accesslevels varchar(15), PRIMARY KEY (aid), UNIQUE aid (aid))");
-  msgtouser(unum,"Yeah Done");
-}
-
 /* Channel module Server Handlers */
 
 void ch_domode() {
@@ -502,47 +510,24 @@ void ch_dojoin() {
 /* Load X to the Channels */
 
 void ch_joinall() {
- char tmps2[TMPSSIZE];
- int res2;
- long xtime;
- MYSQL_RES *myres; MYSQL_ROW myrow;
- 
- sprintf(tmps2,"SELECT * from Xchannels");
- res2=mysql_query(&sqlcon,tmps2);
- if (res2!=0) {
-  putlog("!!! Could not read X channel database !!!");
-  return;
- }
- myres=mysql_store_result(&sqlcon);
- xtime=getnettime();
- while ((myrow=mysql_fetch_row(myres))) {
-  sendtouplink("%sAAB J %s %ld\r\n",servernumeric,myrow[0],xtime);
-  sim_join(myrow[0],(tokentolong(servernumeric)<<SRVSHIFT)+1);
-  sendtouplink("%s OM %s +o %sAAB\r\n",servernumeric,myrow[0],servernumeric);
-  sim_mode(myrow[0],"+o",(tokentolong(servernumeric)<<SRVSHIFT)+1);
-  sendtouplink("%sAAB T %s :%s\r\n",servernumeric,myrow[0],myrow[4]);
-  sim_topic(myrow[0],myrow[4]);
- }
- mysql_free_result(myres);
+  rchan *cp;
+  long xtime;
+
+  xtime=getnettime();
+  for(cp=rchans;cp;cp=cp->next) {
+    sendtouplink("%sAAB J %s %ld\r\n",servernumeric,cp->name,xtime);
+    sim_join(cp->name,(tokentolong(servernumeric)<<SRVSHIFT)+1);
+    if (!cp->cptr) {
+      cp->cptr=getchanptr(cp->name);
+    }
+    sendtouplink("%s OM %s +o %sAAB\r\n",servernumeric,cp->name,servernumeric);
+    sim_mode(cp->name,"+o",(tokentolong(servernumeric)<<SRVSHIFT)+1);
+  }
 } 
 
 void ch_partall(char *xwhy) {
- char tmps2[TMPSSIZE];
- int res2;
- MYSQL_RES *myres; MYSQL_ROW myrow;
- 
- sprintf(tmps2,"SELECT * from Xchannels");
- res2=mysql_query(&sqlcon,tmps2);
- if (res2!=0) {
-  putlog("!!! Could not read X channel database !!!");
-  return;
- }
- myres=mysql_store_result(&sqlcon);
- while ((myrow=mysql_fetch_row(myres))) {
-  sendtouplink("%sAAB L %s :%s\r\n",servernumeric,myrow[0],xwhy);
-  sim_part(myrow[0],(tokentolong(servernumeric)<<SRVSHIFT)+1);
- }
- mysql_free_result(myres);
+  sendtouplink("%sAAB J 0\r\n");
+  sim_join("0",(tokentolong(servernumeric)<<SRVSHIFT)+1);
 } 
 
 /* User info Functions */
@@ -665,34 +650,114 @@ void ch_ieeb(char *xarg) {
  }
 }
 
+/* database things */
+void ch_readdb(void) {
+ char tmps[TMPSSIZE];
+ int res2;
+ long xtime;
+ rchan *cp;
+ MYSQL_RES *myres; MYSQL_ROW myrow;
+ 
+ sprintf(tmps,"SELECT * from chan_db");
+ res2=mysql_query(&sqlcon,tmps);
+ if (res2!=0) {
+  putlog("!!! Could not read channel database !!!");
+  return;
+ }
+ myres=mysql_store_result(&sqlcon);
+ xtime=getnettime();
+ while ((myrow=mysql_fetch_row(myres))) {
+  cp=(rchan*)malloc(sizeof(rchan));
+  mystrncpy(cp->name,myrow[0],CHANNELLEN+1);
+  cp->cflags=atoi(myrow[3]);
+  cp->cptr=getchanptr(cp->name);
+  cp->flag_limit=atoi(myrow[4]);
+  cp->flag_suspendlevel=atoi(myrow[5]);
+  mystrncpy(cp->flag_welcome,myrow[6],TOPICLEN+1);
+  mystrncpy(cp->flag_key,myrow[7],CHANKEYLEN+1);
+  mystrncpy(cp->flag_fwchan,myrow[8],CHANNELLEN+1);
+  mystrncpy(cp->info,myrow[9],MAXINFOLEN+1);
+  cp->suspended_since=atoi(myrow[10]);
+  cp->suspended_until=atoi(myrow[11]);
+  mystrncpy(cp->suspended_by,myrow[12],NICKLEN+1);
+  if (!rchans)
+    cp->next=NULL;
+  else
+    cp->next=rchans;
+  rchans=cp;
+ }
+ sprintf(tmps,"SELECT * from access_db");
+ res2=mysql_query(&sqlcon,tmps);
+ if (res2!=0) {
+  putlog("!!! Could not read channel access database !!!");
+  return;
+ }
+ myres=mysql_store_result(&sqlcon);
+ while ((myrow=mysql_fetch_row(myres))) {
+  /* parse user access flags */
+ } 
+}
+
+void ch_savedb(void) {
+
+}
+
+void ch_createdb(long unum, char *tail) {
+  char tmps[TMPSSIZE];
+  
+  msgtouser(unum,"Attempting to make the channel database");
+  sprintf(tmps,"CREATE TABLE chan_db (xchan varchar(%i) NOT NULL, creator varchar(%i) NOT NULL,"
+  	" cdate bigint NOT NULL, cflags int(11) DEFAULT '%i', flimit int(11) DEFAULT '%i',"
+	" fsuspendlvl int(11) DEFAULT '0' NOT NULL, fwelcome varchar(%i),"
+	" fkey varchar(%i), ffwchan varchar(%i), info varchar(%i), susp_since bigint, "
+	" susp_until bigint, susp_by varchar(%i), PRIMARY KEY (xchan), UNIQUE xchan (xchan))",
+	CHANNELLEN+1,NICKLEN+1,CM_DEFAULT,DEF_LIMIT,TOPICLEN+1,CHANKEYLEN+1,CHANNELLEN+1,MAXINFOLEN+1,NICKLEN+1);
+  mysql_query(&sqlcon,tmps);
+  sprintf(tmps,"CREATE TABLE access_db (aid int(11) UNSIGNED NOT NULL AUTO_INCREMENT,"
+  	" xuser varchar(%i) NOT NULL, xchan varchar(%i) NOT NULL, accesslevels varchar(15),"
+	" PRIMARY KEY (aid), UNIQUE aid (aid))",NICKLEN+1,CHANNELLEN+1);
+  mysql_query(&sqlcon,tmps);
+  msgtouser(unum,"Yeah Done");
+}
+
+
 /* Module Things */
 
 void chan_init() {
   setmoduledesc(MODNAM,"Xevres Channel module");
   registerserverhandler(MODNAM,"M",ch_domode);
   registerserverhandler(MODNAM,"J",ch_dojoin);
+  ch_readdb();
   if (uplinkup==1) { 
    donej=1;
    ch_joinall(); 
   } 
   registerinternalevent(MODNAM,"AC",ch_ieac);
   registerinternalevent(MODNAM,"EB",ch_ieeb);
+  
   registercommand2(MODNAM,"op", ch_op, 0, 0, "op\tGives you channel operator status");
   registercommand2(MODNAM,"voice", ch_voice, 0, 0,"voice\tGives you voice");
   registercommand2(MODNAM,"invite", ch_invite, 0, 0,"invite\tInvites you into a channel");
   registercommand2(MODNAM,"topic", ch_topic, 0, 0,"topic\tSets the Topic on your channel");
-  registercommand2(MODNAM,"kick", ch_kick, 0, 0, "kick\tKicks a user from you channel");
-  registercommand2(MODNAM,"ban", ch_ban, 0, 0, "chanmode\tBans a user from you channel");
-  registercommand2(MODNAM,"clear", ch_clear, 0, 0,"clear\tClears all channel modes");
-  registercommand2(MODNAM,"recover", ch_recover, 0, 0, "recover\tClears all channel modes and deops everybody");
+  registercommand2(MODNAM,"kick", ch_kick, 0, 0, "kick\tKicks a user from your channel");
+  registercommand2(MODNAM,"chanmode", ch_kick, 0, 0, "chanmode\tSet channel modes");
+  registercommand2(MODNAM,"ban", ch_ban, 0, 0, "ban\tBans an user from your channel");
+  registercommand2(MODNAM,"unban", ch_unban, 0, 0, "unban\tRemoves a ban on an user from your channel");
+  registercommand2(MODNAM,"unbanall", ch_unbanall, 0, 0, "unbanall\tRemoves all ban on your channel");
+  registercommand2(MODNAM,"deopall", ch_deopall, 0, 0, "deopall\tDeop everyone on the channl");
+  registercommand2(MODNAM,"clearchan", ch_clearchan, 0, 0, "clearchan\tRemoves all modes from your channel");
+  registercommand2(MODNAM,"recover", ch_recover, 0, 0, "recover\tDo unbannall, deopall and clearchan");
   registercommand2(MODNAM,"access", ch_access, 0, 0, "access\tManage users on a channel");
-  registercommand2(MODNAM,"chanmode", ch_chanmode, 0, 0, "chanmode\tSet modes how X should act on a channel");
+  registercommand2(MODNAM,"chanflags", ch_chanflags, 0, 0, "chanflags\tSet modes how X should act on a channel");
+  registercommand2(MODNAM,"chaninfo", ch_chaninfo, 0, 0, "chaninfo\tShows or sets information about a channel");
+  registercommand2(MODNAM,"chanset", ch_set, 0, 0, "chanset\tSet parameters for chanflags");
   registercommand2(MODNAM,"addchan", ch_add, 1, 700, "addchan\tAdd a new channel.");
   registercommand2(MODNAM,"delchan", ch_del, 1, 700, "delchan\tRemove X from a channel");
   registercommand2(MODNAM,"suspendchan", ch_suspend, 1, 900, "suspendchan\tSuspend a channel");
   registercommand2(MODNAM,"unsuspendchan", ch_unsuspend, 1, 900, "unsuspendchan\tUnsuspend a channel");
+  registercommand2(MODNAM,"suspendlist", xdummy, 1, 500, "suspendlist\tShow suspended channels");
   registercommand2(MODNAM,"createdb_chan", ch_createdb, 1, 999, "createdb_chan\tCreates the Channel database.");
-
+  registercommand2(MODNAM,"savedb_chan", ch_savedb, 1, 700, "savedb_chan\tSaves the Channel database.");
 }
 
 void chan_cleanup() {

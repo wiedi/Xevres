@@ -1,4 +1,4 @@
-/* Xevres
+ /* Xevres
  * Definition of global variables, datatypes etc.
  */
 
@@ -11,25 +11,25 @@
 #include "config.h"
 #include "stringtools.h"
 
-#define operservversion "0.8.2"
+#define operservversion "0.8.3"
 
-#define um_o 1     // +o on a channel (op)
-#define um_v 2     // +v on a channel (voice)
-#define cm_p 1     // chanmode +p (private)
-#define cm_s 2     // chanmode +s (secret)
-#define cm_m 4     // chanmode +m (moderated)
-#define cm_n 8     // chanmode +n (no outside message)
-#define cm_t 16    // chanmode +t (only ops can change topics)
-#define cm_i 32    // chanmode +i (invite only)
-#define cm_l 64    // chanmode +l (limit)
-#define cm_k 128   // chanmode +k (key)
-#define cm_c 256   // chanmode +c (no colors)
-#define cm_C 512   // chanmode +C (no CTCPs)
-#define cm_D 1024  // chanmode +D (auditorium)
-#define cm_r 2048  // chanmode +r (only registered users)
-#define cm_u 4096  // chanmode +u (hide PART/QUIT messages)
-#define cm_O 8192  // chanmode +O (Oper only channel)
-#define cm_F 16384  // chanmode +F (Forward Chan)
+#define um_o 0x1	// +o on a channel (op)
+#define um_v 0x2	// +v on a channel (voice)
+#define cm_p 0x1	// chanmode +p (private)
+#define cm_s 0x2	// chanmode +s (secret)
+#define cm_m 0x4	// chanmode +m (moderated)
+#define cm_n 0x8	// chanmode +n (no outside message)
+#define cm_t 0x10	// chanmode +t (only ops can change topics)
+#define cm_i 0x20	// chanmode +i (invite only)
+#define cm_l 0x40	// chanmode +l (limit)
+#define cm_k 0x80	// chanmode +k (key)
+#define cm_c 0x100	// chanmode +c (no colors)
+#define cm_C 0x200	// chanmode +C (no CTCPs)
+#define cm_D 0x400	// chanmode +D (auditorium)
+#define cm_r 0x800	// chanmode +r (only registered users)
+#define cm_u 0x1000	// chanmode +u (hide PART/QUIT messages)
+#define cm_O 0x2000	// chanmode +O (Oper only channel)
+#define cm_F 0x4000	// chanmode +F (Forward Chan)
 
 #define NICKLEN 15     // Maximum nick length
 #define USERLEN 10     // Maximum ident length
@@ -74,32 +74,32 @@
                                     // we'll resync glines to everyone to save
                                     // traffic
 
-#define NOTICEMASKDEFAULT 1    // Default noticemask for ircops
-#define NM_GLINE 1     // GLINEs set / removed
-#define NM_RNGL  2     // Realname-GLINEs set
-#define NM_TRUSTS 4    // Trusts added / removed
+#define NM_GLINE  0x1				/* GLINEs set / removed */
+#define NM_RNGL   0x2				/* Realname-GLINEs set */
+#define NM_TRUSTS 0x4				/* Trusts added / removed */
+#define NOTICEMASKDEFAULT NM_GLINE		/* Default noticemask for ircops */
 
-#define TRUSTNAMELEN 70     /* Length of the name for a group of trusted hosts */
-                            /* - MUST be at least HOSTLEN! */
-#define TRUSTCONTACTLEN 150 /* Length of admin-email */
-#define TRUSTCOMLEN 200     /* Length of the field for additional comments */
-#define SIZEOFTL 1000   /* Size of trustlist (contains trusted hosts) */
-#define SIZEOFIDMAP 1000     /* Size of the table mapping trustgroup-ids to names */
-#define SIZEOFSHL 50    /* Size of serverhandler list hash table */
-#define GLINEMAXHIT  5000  /* How many users a normal oper can hit with a GLINE */
+#define TRUSTNAMELEN		70		/* Length of the name for a group of trusted hosts */
+						/* - MUST be at least HOSTLEN! */
+#define TRUSTCONTACTLEN		150		/* Length of admin-email */
+#define TRUSTCOMLEN		200		/* Length of the field for additional comments */
+#define SIZEOFTL		1000		/* Size of trustlist (contains trusted hosts) */
+#define SIZEOFIDMAP		1000		/* Size of the table mapping trustgroup-ids to names */
+#define SIZEOFSHL		50		/* Size of serverhandler list hash table */
+#define GLINEMAXHIT		5000		/* How many users a normal oper can hit with a GLINE */
 
-#define CFMINUSERS         4  /* Minimum number of users needed for chanfix */
-#define CFMAXSPLITSERVERS  10 /* Maximum number of split servers before we abandon chanfix */
-#define CFINTERVAL         30 /* Channel scan interval */
-#define CFREMEMBEROPSMAX   10*(3600*24) /* Max time to remember ops for (10 days) */
-#define CFREMEMBERPERPOINT 3600 /* How long each point lasts */
-#define CFMINCANDIDATES    5  /* Minimum number of people eligible for reopping */
-#define CFCANDIDATEPERCENT 25 /* The top this-percent are eligible for reopping */
-#define CFMINSCORE         6 /* An "regular op" needs at least this many points to get reopped */
-#define CFREMEMBERCHAN     10*(3600*24) /* How long to remember channels for (10 days) */
-#define CFFILENAME         "chandb" /* File to save out channel database to */
-#define CFSCANBUCKETS      10000 /* Number of buckets to scan each interval */
-                                 /* You should set this to 1/10th of SIZEOFCL ! */
+#define CFMINUSERS		4		/* Minimum number of users needed for chanfix */
+#define CFMAXSPLITSERVERS	10		/* Maximum number of split servers before we abandon chanfix */
+#define CFINTERVAL		30		/* Channel scan interval */
+#define CFREMEMBEROPSMAX	10*(3600*24)	/* Max time to remember ops for (10 days) */
+#define CFREMEMBERPERPOINT	3600		/* How long each point lasts */
+#define CFMINCANDIDATES		5		/* Minimum number of people eligible for reopping */
+#define CFCANDIDATEPERCENT	25		/* The top this-percent are eligible for reopping */
+#define CFMINSCORE		6		/* An "regular op" needs at least this many points to get reopped */
+#define CFREMEMBERCHAN		10*(3600*24)	/* How long to remember channels for (10 days) */
+#define CFFILENAME		"chandb"	/* File to save out channel database to */
+#define CFSCANBUCKETS		10000		/* Number of buckets to scan each interval */
+						/* You should st this to 1/10th of SIZEOFCL ! */
 
 #define REOP_OPPED         0  /* Opped at least one user */
 #define REOP_NOINFO       -1  /* No regular op info for channel */
@@ -600,6 +600,7 @@ unsigned long tokentolong(char* token);
 void longtotoken(unsigned long what, char* result, int dig);
 unsigned long iptolong(unsigned int a, unsigned int b, unsigned int c, unsigned int d);
 void toLowerCase(char* a);
+void toLowerCase2(char* a);
 void normnum(char* a);
 void delchar(char *a, char b);
 void appchar(char *a, char b);
@@ -633,6 +634,7 @@ void deopall(channel *c);
 char * alacstr(char *x);
 void sendtouplink(const char *template, ...);
 char *unum2nick(long unum);
+char *unum2auth(long unum);
 void sim_join(char *xchan, long num);
 void sim_part(char *xchan, long num);
 void sim_topic(char *xchan, char *topic);

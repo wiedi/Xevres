@@ -265,6 +265,18 @@ void toLowerCase(char* a) {
   }
 }
 
+void toLowerCase2(char* a) {
+  int j; char *c;
+  j=('a'-'A');
+  c=a;
+  while (*c!='\0') {
+    if ((*c>='A') && (*c<='Z')) {
+      *c+=j;
+    }
+    c++;
+  }
+}
+
 void normnum(char* a) {
   int b;
   b=strlen(a);
@@ -732,10 +744,13 @@ char *unum2nick(long unum) {
  return reqrec->nick;
 }
 
+char *unum2auth(long unum) {
+ userdata *reqrec;
+ reqrec=getudptr(unum);
+ return reqrec->authname;
+}
 
 /* simulate functions */
-
-
 void sim_join(char *xchan, long num) {
  channel *ctmp;
  

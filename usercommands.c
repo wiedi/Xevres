@@ -1320,11 +1320,23 @@ void dobase64toint(long unum, char *tail) {
 }
 
 void dodie(long unum, char *tail) {
-  int res; char tmps2[TMPSSIZE], tmps3[TMPSSIZE];
+  char tmps2[TMPSSIZE], tmps3[TMPSSIZE];
+  int res, i; 
+  afakeuser *tmpp;
+  
   if (!checkauthlevel(unum,998)) { return; }
   res=sscanf(tail,"%s %[^\n]",tmps2,tmps3);
   if (res<2) { numtonick(unum,tmps2); sprintf(tmps3,"Terminated by %s",tmps2); }
   msgtouser(unum,"Terminating...");
+  /* save bandwidth - let all fake clients join 0 */
+  if (myfakes.cursi!=0) {
+    tmpp=((afakeuser *)(myfakes.content));
+    for (i=0;i<myfakes.cursi;i++) {
+      longtotoken(tmpp[i].numeric,tmps2,5);
+      sendtouplink("%s J 0\r\n",tmps2);
+      /* sim_join("0",tmpp[i].numeric); -- why sync if we're dead anyway? */
+    }
+  }
   sendtouplink("%s SQ %s :%s\r\n",servernumeric,myname,tmps3);
   fflush(sockout);
 }

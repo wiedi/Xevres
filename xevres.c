@@ -127,6 +127,7 @@ long lastsettime=0;
 long waitingforping=0;
 long lasthourly=0;
 long laststatswrite=0;
+long lastmin=0;
 long lastfakenum=10;
 long lastscan=0;
 long resyncglinesat=0;
@@ -1620,6 +1621,7 @@ int main(int argc, char **argv) {
   starttime=time(NULL);
   lastsettime=starttime; waitingforping=0;
   lasthourly=starttime; laststatswrite=starttime;
+  lastmin=starttime;
   longtotoken(iptolong(127,0,0,1),tmps1,6);
   sendtouplink("SERVER %s 1 %ld %ld J10 %sA]] 0 +hs :xevres %s\r\n",myname,starttime,starttime,servernumeric,operservversion);
   sendtouplink("%s N %s 1 %ld xevres %s +odkX %s %sAAB :Xevres Rocks %s\r\n",servernumeric,mynick,starttime,myname,tmps1,servernumeric,operservversion);
@@ -1632,30 +1634,6 @@ int main(int argc, char **argv) {
   up=getudptr((tokentolong(servernumeric)<<SRVSHIFT)+1);
   strcat(up->umode,"odkX");
   /* Register all serverhandlers */
-  /* Old ircu stuff - can be commented out with newer ircds */
-  registerserverhandler("CORE","END_OF_BURST",handleeobmsg);
-  registerserverhandler("CORE","NICK",handlenickmsg);
-  registerserverhandler("CORE","QUIT",handlequitmsg);
-  registerserverhandler("CORE","KILL",handlekillmsg);
-  registerserverhandler("CORE","SERVER",handleservermsg);
-  registerserverhandler("CORE","PING",handleping);
-  registerserverhandler("CORE","MODE",handlemodemsg);
-  registerserverhandler("CORE","OPMODE",handlemodemsg); /* should be exactly the same */
-  registerserverhandler("CORE","PRIVMSG",handleprivmsg);
-  registerserverhandler("CORE","SQUIT",handlesquit);
-  registerserverhandler("CORE","BURST",handleburstmsg);
-  registerserverhandler("CORE","CREATE",handlecreatemsg);
-  registerserverhandler("CORE","JOIN",handlejoinmsg);
-  registerserverhandler("CORE","PART",handlepartmsg);
-  registerserverhandler("CORE","KICK",handlekickmsg);
-  registerserverhandler("CORE","GLINE",handleglinemsg);
-  registerserverhandler("CORE","STATS",handlestatsmsg);
-  registerserverhandler("CORE","EOB_ACK",handleeoback);
-  registerserverhandler("CORE","TOPIC",handletopic);
-  registerserverhandler("CORE","WHOIS",handleremotewhois);
-  registerserverhandler("CORE","ACCOUNT",handleaccountmsg);
-  registerserverhandler("CORE","CLEARMODE",handleclearmodemsg);
-  /* New ircu stuff */
   registerserverhandler("CORE","EB",handleeobmsg);
   registerserverhandler("CORE","N",handlenickmsg);
   registerserverhandler("CORE","Q",handlequitmsg);
@@ -1716,6 +1694,7 @@ int main(int argc, char **argv) {
         saveall();
         purgeglines();
         splitpurge();
+	dointernalevents("60MIN","");
         lasthourly=getnettime();
         putlog("Hourly duties done.");
       }
@@ -1733,6 +1712,10 @@ int main(int argc, char **argv) {
       if ((laststatswrite+300)<cuneti) { /* 5 Minutes since last statswrite */
         laststatswrite=cuneti;
         writestatstodb();
+      }
+      if ((lastmin+60)<cuneti) { /* 1 minute is over */
+        lastmin=cuneti;
+        dointernalevents("1MIN","");
       }
       if ((lastsettime+3600)<cuneti) {
         // Last settime was 1 hour ago, time to do it again

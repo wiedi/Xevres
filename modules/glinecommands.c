@@ -291,9 +291,9 @@ void dogline(long unum, char *tail) {
   res=sscanf(tail,"%s %s %s %[^\n]",tmps2,tmps3,tmps4,tmps5);
   if (res<3) {
     msgtouser(unum,"Syntax: gline hostmask duration [reason]");
-    msgtouser(unum,"Note: O does do some sanity checks to the glines, and tries to count the users hit by it,");
+    newmsgtouser(unum,"Note: %s does do some sanity checks to the glines, and tries to count the users hit by it,",mynick);
     msgtouser(unum,"      but it does not alter the gline in any way before it is sent to the net. That means");
-    msgtouser(unum,"      you can use any feature the ircd offers, even if O does not understand it.");
+    newmsgtouser(unum,"      you can use any feature the ircd offers, even if %s does not understand it.",mynick);
     return;
   }
   if (res==3) {

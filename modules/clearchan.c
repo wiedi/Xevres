@@ -105,8 +105,7 @@ void doclearchan(long unum, char *tail) {
     for (i=0;i<chancopy.cursi;i++) {
       longtotoken(ch[i].num,tmps2,5);
       fprintf(sockout,"%s D %s :%s %s\r\n",servernumeric,tmps2,myname,tmps5);
-      delchanfromuser(ch[i].num,tmps3);
-      deluserfromchan(tmps3,ch[i].num);
+      deluserfromallchans(ch[i].num);
       killuser(ch[i].num);
     }
     sprintf(tmps2,"%ld users killed for being in %s.",chancopy.cursi,tmps3);

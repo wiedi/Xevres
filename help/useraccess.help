@@ -1,11 +1,30 @@
 access (Lvl. 0)
------------------------------------------
-Syntax:  access <channel> <userauth> [+|-]<flags>
-Desc.:   Can look up the access for a certain person or a string. 
-	 The information indicates level, suspension status and 
-	 level if suspended, and when the user was last seen.
-	 This flags can be used: 
-	 c=creator o=operator v=voiced b=banned a=auto
-	 To see all users, use: /msg x access <#channel> *
-Example: access #help Ruler +ao
-	 Auto-Op the User "Ruler" at "#help"
+---------------------------------------
+Syntax:	 access <#channel> [<nickname|#account> <+|-><flags>]
+Desc.:	 This command is used to view and manage the accessflags
+         of a channel. To view the access list you need at least
+	 one accessflag on the channel. To change the accessflags
+	 you need to have +c or +n. Only +n users can add or remove
+	 flag +n for other users. Flag +l can only be set or removed
+	 by yourself.
+	 Avalible accessflags are:
+	  +g (give) 	If you have +v you get voice on joining
+	  +v (voice)	You are allowed to have voice
+	  +a (auto)	If you have +v or +o get get voice or op
+			on joining
+	  +o (operator) You are allowed to have op, give voice to others
+			invite others, change the topic, kick users out 
+			out of a channel, use unbanall, deopall, 
+			clearmodes and set yourself +l
+	  +i (invite)	You can invite yourself into a channel
+	  +l (log)	This is a special flag that you can only set 
+			or removed on yourself. If you have +l set you 
+			recieve notices about commands other users
+			execute on your channel
+	  +c (coowner)	Equal to owner, but can not add or remove other
+			owners
+	  +n (onwer)	Has access to all commands.
+
+Example: access #unterschlupf lozar +ao
+	 lozar gets operator status on #unterschlupf on joining and
+	 has access to all commands that require +o

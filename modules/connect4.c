@@ -1,10 +1,11 @@
 /*
-xevres connect4 module (a clone to bewares pascal connect4)
+xevres connect4 module (a clone to beware's and plugwash's fp connect4)
 
   based on 4inarow by Davide Corrado (also known as Mr. Dave konrad)
   
   this is just a code example for the new module interface.
-  note: this module wastes about 10MB and more of mem ;)
+  note: this module wastes about 10MB and more of mem,
+  	i'll write one that uses dynamic mem allocation ;)
   	--Wiedi
   
 */
@@ -14,6 +15,7 @@ xevres connect4 module (a clone to bewares pascal connect4)
 #include <string.h>
 #include "globals.h"
 #define MODNAM "connect4"
+#define MVERSION "1.2"
 
 /* Some options */
 /* Mirc Color Code Char */
@@ -63,8 +65,8 @@ void c4_help(long unum, char *tail) {
 }
 
 void c4_version(long unum, char *tail) {
- msgffake(unum,"c","Xevres Connect4 Module (compiled on %s)", __DATE__);
- msgffake(unum,"c","Coded by Wiedi based on the idea of bewares pascal connect4.");
+ msgffake(unum,"c","Xevres Connect4 Module V%s (compiled on %s)",MVERSION, __DATE__);
+ msgffake(unum,"c","Coded by Wiedi based on the idea of beware's/plughwash's pascal connect4.");
  msgffake(unum,"c","Some code stolen from Davide Corrado's 4inarow.");
 }
 
@@ -237,7 +239,7 @@ void initialize(fourinarow *four_game) {
   int count1,count2;
   four_game->nmoves=0;
   four_game->pl1=-1;
-  four_game->pl1=-1;
+  four_game->pl2=-1;
   four_game->lastmove=0;
   for(count2=0;count2<PW;count2++)
   {

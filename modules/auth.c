@@ -1,6 +1,7 @@
 /*
 xevres auth module
 based on QmOd by EZ_Target.
+it has many bugs! i'll write a new one....
 */
 
 #include <stdio.h>
@@ -36,6 +37,7 @@ void doxauth(long unum, char *tail) {
     msgtouser(unum,"/msg X auth <nick> <password>");
     return;
   }
+  toLowerCase2(tmps3);
   mysql_escape_string(tmps6,tmps3,strlen(tmps3));
   mysql_escape_string(tmps7,tmps4,strlen(tmps4));
   sprintf(tmps2,"SELECT * from Xusers where username ='%s'",tmps6);
@@ -130,6 +132,7 @@ void doxpasswd(long unum, char *tail) {
     msgtouser(unum,"You should type your new password two times the same. ;-)");
     return;
   }
+  toLowerCase2(tmps3);
   mysql_escape_string(tmps7,tmps3,strlen(tmps3));
   mysql_escape_string(tmps8,tmps4,strlen(tmps4));
   mysql_escape_string(tmps9,tmps5,strlen(tmps5));
@@ -166,7 +169,7 @@ void dogetxpasswd(long unum, char *tail) {
     msgtouser(unum,"/msg X getpass <authnick>");
     return;
   }
-  
+  toLowerCase2(tmps3);
   mysql_escape_string(tmps5,tmps3,strlen(tmps3));
   sprintf(tmps2,"SELECT * from Xusers where username ='%s'",tmps5);
   res2=mysql_query(&sqlcon,tmps2);
@@ -218,7 +221,7 @@ void doauthsuspend(long unum, char *tail) {
   for (hcount = 0; hcount < SIZEOFUL; hcount++) {
    udata = uls[hcount];
    while (udata != NULL) {
-    if ((strcmp(udata->authname, tmps4)) && (ischarinstr('r', udata->umode) == 1)) {
+    if ((strcmp(udata->authname, tmps4)==0) && (ischarinstr('r', udata->umode)==1)) {
      longtotoken(udata->numeric, target, 5);
      fprintf(sockout, "%s D %s :%s Your auth has been suspended. Cyaaa\r\n", servernumeric, target, myname);
      kcount++;

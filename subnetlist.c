@@ -1,5 +1,5 @@
 /*
-Operservice 2
+Xevres (based on Operservice 2)
 subnet counting functions.
 Note: This file previously contained functions for handling /24 subnets.
       It now contains functions for handling the O subnet counts.

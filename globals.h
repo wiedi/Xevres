@@ -1,4 +1,4 @@
-/* Operservice 2
+/* Xevres
  * Definition of global variables, datatypes etc.
  */
 
@@ -11,7 +11,7 @@
 #include "config.h"
 #include "stringtools.h"
 
-#define operservversion "2.36"
+#define operservversion "0.8"
 
 #define um_o 1     // +o on a channel (op)
 #define um_v 2     // +v on a channel (voice)
@@ -45,7 +45,7 @@
 #define RNGTIM 1800    // How many seconds the realname-glines will be set
 /* You need to adapt the following settings to the size of your network.
    If you make them too small, the size of the chains dangling from the
-   hashtable-buckets will become too big, and O will become *S*L*O*W*
+   hashtable-buckets will become too big, and X will become *S*L*O*W*
    Your average user/channelcount at peak time should be a good value for this. */
 #define SIZEOFUL 100000 // How many chained lists form the Userlist
 #define SIZEOFCL 100000 // The same for the channellist
@@ -279,6 +279,13 @@ struct aserverhandler {
   void (*func)(void);
 };
 
+typedef struct aieventhandler aieventhandler;
+struct aieventhandler {
+  char name[COMMANDLEN+1];
+  char providedby[MODNAMELEN+1];
+  void (*func)(char *xparam);
+};
+
 typedef struct trustedgroup trustedgroup;
 struct trustedgroup {
   unsigned long id; // MUST NOT be 0
@@ -350,6 +357,7 @@ extern channel * cls[SIZEOFCL];  /* Channellist */
 extern array nls[SIZEOFNL];      /* Nick-lists */
 extern array reg[SIZEOFCL];      /* Registered channel list */
 extern array serverhandlerlist[SIZEOFSHL]; // List of all serverhandlers
+extern array internaleventlist[SIZEOFSHL]; // List of all serverhandlers
 extern autheduser *als;  /* List of authed users */
 extern flags chanflags[];
 extern int numcf; /* Number of Chanflags */
@@ -408,6 +416,7 @@ extern char modend[10];        // What filesuffix modules have
 extern array modulelist;      // List of all loaded modules
 extern array commandlist;     // List of all loaded commands
 extern array serverhandlerlist[SIZEOFSHL]; // List of all serverhandlers
+extern array internaleventlist[SIZEOFSHL]; // List of all internal events
 extern trustedhost * trustedhosts[SIZEOFTL];       // The trusted hosts
 extern trustedgroup * trustedgroups[SIZEOFIDMAP];
 extern int glineonclones;
@@ -421,12 +430,12 @@ extern subnetchelp * impv4snt[SIZEOFSNC]; /* IMPlicit SubNet-Trusts - calculated
 extern unsigned long ipv4usercount; /* Number of users on 0.0.0.0/0 */
 extern unsigned long netmasks[33]; /* Netmasks */
 extern char logtimestampformat[TMPSSIZE/2];   /* strftime format for Log timestamps */
-
+extern int uplinkup; /* server connection ready to use? */
 /* End of global variable definitions */
 
 /* Define important functions */
 
-/* Operservice.c */
+/* xevres.c */
 int alreadyinglinesto(char *nick);
 void showhelp(long unum, char *command);
 void getuserdata(authdata *retad, char *username);
@@ -494,7 +503,8 @@ void addtonicklist(userdata *a);
 void delfromnicklist(char *nick);
 void writestatstodb(void);
 int isglineset(char *mask);
-/* End of Operservice.c */
+void lastlinesplit(void); 
+/* End of xevres.c */
 
 /* subnetlist.c */
 void sncadd(unsigned long IP, unsigned long *res);
@@ -685,13 +695,21 @@ void registercommand2(char *mod, char *name, void *func, int operonly, int minle
 void registerserverhandler(char *mod, char *name, void *func);
 void deregistercommand(char *name);
 void deregisterserverhandler(char *name);
+void deregisterserverhandler2(char *name, char *mod);
+	/* ievents */
+void registerinternalevent(char *mod, char *name, void *func);
+void deregisterinternalevent(char *name, char *mod);
+int dointernalevents(char *cmd, char *template, ...);
+	/* done */
 int dodyncmds(char *cmd, long unum, char *tail, int oper, int authlev);
 int doserverhandlers(char *cmd);
+/* int dofserverhandlers(const char *template, ...);   <- SUCKS */
 void dyncmdhelp(long unum, int oper, int authlev);
 void doloadmod(long unum, char *tail);
 void dounloadmod(long unum, char *tail);
 void doreloadmod(long unum, char *tail);
 void dolsmod(long unum, char *tail);
+void printhelp(long unum, char *hlptxt);
 /* End of dynamic.c */
 
 /* trusts.c */

@@ -1,0 +1,49 @@
+V 2.0 [MAJOR]
+-> final testing
+-> stats: latest bug fixes
+
+V 1.8
+-> tcl: final bugfixes
+-> waldi: 50% story done
+-> stats: should work
+
+V 1.6 
+-> tcl: add some tcl functions
+-> waldi: 20% story done
+-> stats: basic statistic module (mrtg)
+-> relay: basic relay functions
+
+V 1.4
+-> tcl: sql and multithreading support
+-> waldi: rewrite the waldi module
+
+V 1.2
+-> tcl: basic tcl module
+
+V 1.0 [MAJOR]
+-> chan: latest bug fixes
+-> vhost: finished
+
+V 0.9
+-> chan: ch_domode() function
+-> chan: channel mode command
+-> chan: ban handling
+-> auth: rewrite module
+-> w0nko: support cmode F,O
+-> chan: basic chan forwarding module
+-> vhost: basic vhost module
+
+V 0.8 [WE ARE HERE]
+-> main: inter module communication
+-> chan: most chan mod commands
+
+V 0.7
+-> auth: latest bugfixes
+-> chan: access command in chan module
+
+V 0.6
+-> auth: completed auth module
+-> chan: basic chan module
+
+V 0.5
+-> auth: basic auth module

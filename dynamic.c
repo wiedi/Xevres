@@ -1,5 +1,5 @@
 /*
-Operservice 2 - dynamic.c
+Xevres (based on Operservice 2) - dynamic.c
 Functions for loading/unloading/handling dynamic modules
 (C) Michael Meier 2000-2001 - released under GPL
 -----------------------------------------------------------------------------
@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
+#include <stdarg.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -221,6 +222,66 @@ void deregisterserverhandler(char *name) {
   }
 }
 
+/* Wiedi says: Deregister only a serverhandler 
+   provided by one module because we fuck up everything 
+   if a module is unloaded und deregisters some serverhandler, right?
+*/
+void deregisterserverhandler2(char *name, char *mod) {
+  long i; aserverhandler *sh; unsigned int hasch;
+  hasch=shlhash(name);
+  for (i=0;i<serverhandlerlist[hasch].cursi;i++) {
+    sh=(aserverhandler *)serverhandlerlist[hasch].content;
+    if ((strcmp(name,sh[i].name)==0) && strcmp(sh[i].providedby,mod)==0) {
+      array_delslot(&serverhandlerlist[hasch], i);
+      i--;
+    }
+  }
+}
+
+/* Internal Event for local commands */
+void registerinternalevent(char *mod, char *name, void *func) {
+  long i; aieventhandler *sh; unsigned int hasch;
+  hasch=shlhash(name);
+  i=array_getfreeslot(&internaleventlist[hasch]);
+  sh=(aieventhandler *)internaleventlist[hasch].content;
+  sh[i].func=func;
+  mystrncpy(sh[i].providedby,mod,MODNAMELEN);
+  toLowerCase(sh[i].providedby);
+  mystrncpy(sh[i].name,name,COMMANDLEN);
+}
+
+void deregisterinternalevent(char *name, char *mod) {
+  long i; aieventhandler *sh; unsigned int hasch;
+  hasch=shlhash(name);
+  for (i=0;i<internaleventlist[hasch].cursi;i++) {
+    sh=(aieventhandler *)internaleventlist[hasch].content;
+    if ((strcmp(name,sh[i].name)==0) && strcmp(sh[i].providedby,mod)==0) {
+      array_delslot(&internaleventlist[hasch], i);
+      i--;
+    }
+  }
+}
+
+int dointernalevents(char *cmd, char *template, ...) {
+ long i; aieventhandler *sh; int foundone=0; unsigned int hasch;
+ char xparam[TMPSSIZE];
+ va_list ap;
+ 
+ va_start(ap,template);
+ vsprintf(xparam,template,ap);
+ va_end(ap);
+ hasch=shlhash(cmd);
+ sh=(aieventhandler *)internaleventlist[hasch].content;
+ for (i=0;i<internaleventlist[hasch].cursi;i++) {
+  if (strcmp(cmd,sh[i].name)==0) {
+   sh[i].func(xparam); foundone=1;
+  }
+ }
+ return foundone;
+}
+
+
+
 /* Runs through all loaded commands and executes it if it is the one we search
    for
 */
@@ -257,6 +318,34 @@ int doserverhandlers(char *cmd) {
   }
   return foundone;
 }
+
+/* Can be called to undesync us more easily (hope this fucks up not to much :-) 
+   And YES: i know this is ugly!
+*/ 
+/*   
+   And yes: this fucks up too much, so removed!
+
+
+int dofserverhandlers(const char *template, ...) {
+ long i; aserverhandler *sh; int foundone=0; unsigned int hasch;
+ char cmd[TMPSSIZE];
+ va_list ap;
+ 
+ va_start(ap,template);
+ vsprintf(lastline,template,ap);
+ va_end(ap);
+ lastlinesplit();
+ if (paramcount<2) { strcpy(cmd,""); } else { strcpy(cmd,params[1]); }
+ hasch=shlhash(cmd);
+ sh=(aserverhandler *)serverhandlerlist[hasch].content;
+ for (i=0;i<serverhandlerlist[hasch].cursi;i++) {
+  if (strcmp(cmd,sh[i].name)==0) {
+   sh[i].func(); foundone=1;
+  }
+ }
+ return foundone;
+}
+*/
 
 void printhelp(long unum, char *hlptxt) {
   char *a; int b; char tmps2[TMPSSIZE];

@@ -1,5 +1,5 @@
 /*
-Operservice 2 - arrays.c
+Xevres (based on Operservice 2) - arrays.c
 Arrays are used all over in O2. This .c supplies some functions for handling
 them.
 (C) Michael Meier 2000-2001 - released under GPL

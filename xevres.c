@@ -1,6 +1,7 @@
 /*
-Operservice 2
+Xevres (based on Operservice 2)
 (C) Michael Meier 2000-2001 - released under GPL
+(C) Sebastian Wiedenroth 2004
 -----------------------------------------------------------------------------
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -16,17 +17,6 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ------------------------------------------------------------------------------
-
-Compiling: edit the Makefile so that the path to mysql-libs and includes is
-           correct. Then compile with:
-           make
-Start with ./Operservice configfilename
-
-ToDo:
-- add/delete chans (very low priority)
-- userlist-functions
-- convert rnglines to regex
-- new subnetcounting
 */
 #include <stdio.h>
 #include <stdlib.h>
@@ -98,14 +88,14 @@ const char upwdchars[]="ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz12345
 char tmps1[TMPSSIZE];
 char command[TMPSSIZE];
 char conpass[100]="yeahsure";  // These are compile-time defaults only, you
-char mynick[NICKLEN+1]="O2";          // should not change them, use a configfile
-char myname[100]="someservice.somenet.org";  // instead.
-char conto[100]="someserver.somenet.org";
+char mynick[NICKLEN+1]="X";          // should not change them, use a configfile
+char myname[100]="xevres.xchannel.org";  // instead.
+char conto[100]="hub2.xchannel.org";
 unsigned int conport=4400;
-char sqluser[100]="operserv";
+char sqluser[100]="xevres";
 char sqlpass[100]="yeahsure";
 char sqlhost[100]="localhost";
-char sqldb[100]="operserv";
+char sqldb[100]="xevres";
 int sqlport=MYSQL_PORT;
 char servernumeric[3];
 char uplnum[3]="";
@@ -113,7 +103,8 @@ char lastburstchan[520]="";
 int lastburstflags=0;
 long starttime;  // Timestamp, contains starttime of the service
 int burstcomplete=0;  // Is set to 1 once the netburst completed
-char logfile[FILENAME_MAX]="Operservice.log";
+int uplinkup=0; /* is set to 1 if modules can send data */
+char logfile[FILENAME_MAX]="xevres.log";
 char helppath[300]="help/";
 long timestdif=0;   // Timestamp-difference
 MYSQL sqlcon;
@@ -149,6 +140,7 @@ char modend[10]=".so"; // What filesuffix modules have
 array modulelist;      // List of all loaded modules
 array commandlist;     // List of all loaded commands
 array serverhandlerlist[SIZEOFSHL]; // List of all serverhandlers
+array internaleventlist[SIZEOFSHL]; // List of all internalevents
 int glineautosync=1;
 volatile int igotsighup=0;
 char *configfilename;
@@ -1472,6 +1464,7 @@ void writestatstodb(void) {
 int main(int argc, char **argv) {
   int whatever; char prevline[TMPSSIZE]; int iii; struct sigaction sa; unsigned long trustres;
   burstcomplete=0; sls=NULL;
+  uplinkup=0;
   /* Install signalhandler */
   sa.sa_handler=sighuphandler;
   sigemptyset(&sa.sa_mask);
@@ -1511,6 +1504,11 @@ int main(int argc, char **argv) {
     array_setlim1(&serverhandlerlist[iii],5);
     array_setlim2(&serverhandlerlist[iii],7);
   }
+  for (iii=0;iii<SIZEOFSHL;iii++) {
+    array_init(&internaleventlist[iii],sizeof(aieventhandler));
+    array_setlim1(&internaleventlist[iii],5);
+    array_setlim2(&internaleventlist[iii],7);
+  }
   array_init(&deniedtrusts,sizeof(trustdeny));
   strcpy(sendglinesto,"");
   numcf=sizeof(chanflags)/sizeof(flags);
@@ -1522,8 +1520,8 @@ int main(int argc, char **argv) {
     putlog("Trying to load config: %s...",argv[1]);
     configfilename=alacstr(argv[1]);
   } else {
-    putlog("Trying to load default config Operservice.conf...");
-    configfilename=alacstr("Operservice.conf");
+    putlog("Trying to load default config xevres.conf...");
+    configfilename=alacstr("xevres.conf");
   }
   putlog("%s",(loadconfig(configfilename,0)<0) ? "FAILED" : "done.");
   nicktomsg=(char *)malloc(strlen(mynick)+strlen(myname)+2);
@@ -1569,7 +1567,7 @@ int main(int argc, char **argv) {
   putlog("Loading Chanfix-data...");
   loadallchans();
   array_init(&myfakes,sizeof(afakeuser));
-  createfakeuser((tokentolong(servernumeric)<<SRVSHIFT)+1,mynick,"operserv",myname,"This is Operservice V2.X",0);
+  createfakeuser((tokentolong(servernumeric)<<SRVSHIFT)+1,mynick,"xevres",myname,"i am xevres",0);
   array_init(&splitservers,sizeof(splitserv));
   addsplit("dummy_to_prevent_ops_if_net_is_split_and_o_doesnt_know_yet");
   putlog("Connecting to %s Port %u",conto,conport);
@@ -1586,10 +1584,16 @@ int main(int argc, char **argv) {
   lastsettime=starttime; waitingforping=0;
   lasthourly=starttime; laststatswrite=starttime;
   longtotoken(iptolong(127,0,0,1),tmps1,6);
-  sendtouplink("SERVER %s 1 %ld %ld J10 %sA]] 0 +hs :This is operservice %s\r\n",myname,starttime,starttime,servernumeric,operservversion);
-  sendtouplink("%s N %s 1 %ld operserv %s +odk %s %sAAB :This is operservice %s\r\n",servernumeric,mynick,starttime,myname,tmps1,servernumeric,operservversion);
+  sendtouplink("SERVER %s 1 %ld %ld J10 %sA]] 0 +hs :xevres %s\r\n",myname,starttime,starttime,servernumeric,operservversion);
+  sendtouplink("%s N %s 1 %ld xevres %s +odkX %s %sAAB :Xevres Rocks %s\r\n",servernumeric,mynick,starttime,myname,tmps1,servernumeric,operservversion);
   sendtouplink("%s EB\r\n",servernumeric);
+  uplinkup=1;
+  dointernalevents("EB","");
   fflush(sockout);
+  /* sync the X usermodes */
+  userdata *up;
+  up=getudptr((tokentolong(servernumeric)<<SRVSHIFT)+1);
+  strcat(up->umode,"odkX");
   /* Register all serverhandlers */
   /* Old ircu stuff - can be commented out with newer ircds */
   registerserverhandler("CORE","END_OF_BURST",handleeobmsg);

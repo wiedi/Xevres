@@ -1,7 +1,8 @@
 /*
-Operservice 2 - serverhandlers.c
+Xevres (based on Operservice 2) - serverhandlers.c
 This baby handles all commands received from the server.
 (C) Michael Meier 2000-2001 - released under GPL
+(C) Sebastian Wiedenroth 2004
 -----------------------------------------------------------------------------
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -396,8 +397,9 @@ void handlekillmsg() {
   sprintf(tmps2,"%sAAB",servernumeric);
   if (strcmp(params[2],tmps2)==0) {
     longtotoken(iptolong(127,0,0,1),tmps2,6);
-    sendtouplink("%s N %s 1 %ld operserv %s +odk %s %sAAB :This is operservice %s\r\n",
-      servernumeric,mynick,starttime,myname,tmps2,servernumeric,operservversion);
+    sendtouplink("%s N %s 1 %ld xevres %s +odk %s %sAAB :Xevres Rocks %s\r\n",servernumeric,mynick,starttime,myname,tmps2,servernumeric,operservversion);
+    sendtouplink("%sAAB J #xchannel %ld\r\n",servernumeric,starttime);
+    sendtouplink("%s OM #xchannel +o %sAAB\r\n",servernumeric,servernumeric);
     dochanneljoins();
     return;
   }
@@ -650,29 +652,30 @@ void handleprivmsg() {
     }
   }
   numtohostmask(unum,lotmp);
-  if ((strcmp(ucmd,"password")!=0) && (strcmp(ucmd,"auth"))!=0) {
+  if ((strcmp(ucmd,"password")!=0) && (strcmp(ucmd,"login"))!=0) {
     putlog("%s !%s!",lotmp,tail);
   }
-  if ((strcmp(tmps4,nicktomsg)!=0) && (strcmp(ucmd,"auth")==0)) {
+/*
+  if ((strcmp(tmps4,nicktomsg)!=0) && (strcmp(ucmd,"login")==0)) {
     msgtouser(unum,"You should not /msg me this way. If you want to send commands, you should use");
     sprintf(tmps4,"/msg %s@%s",mynick,myname);
     msgtouser(unum,tmps4);
-  }
+   }
+*/
 // Insert all commands that are available to non-ircops here - and a copy below
-  if (strcmp(ucmd,"auth")==0) { doauth(unum,tail); return; }
+  if (strcmp(ucmd,"login")==0) { doauth(unum,tail); return; }
   if (strcmp(ucmd,"help")==0) { douserhelp(unum,tail); if (!iio) { return; } }
   if (strcmp(ucmd,"showcommands")==0) { douserhelp(unum,tail); if (!iio) { return; } }
+  if (strcmp(ucmd,"create")==0) { dohello(unum,tail); return; }
   if (dodyncmds(ucmd,unum,tail,0,getauthlevel(unum))) { return; }
   if (iio) {
 // Commands only available for ircops
-    if (strcmp(ucmd,"hello")==0) { dohello(unum,tail); return; }
     if (strcmp(ucmd,"password")==0) { dochangepwd(unum,tail); return; }
     if (strcmp(ucmd,"noticeme")==0) { donoticeset(unum,tail); return; }
     if (strcmp(ucmd,"whois")==0) { dowhois(unum,tail); return; }
     if (strcmp(ucmd,"status")==0) { dostatus(unum,tail); return; }
     if (strcmp(ucmd,"opchan")==0) { doopchan(unum,tail); return; }
-    if (strcmp(ucmd,"jupe")==0) { dojupe(unum,tail); return; }
-    if (strcmp(ucmd,"help")==0) { dooperhelp(unum,tail); return; }
+    if (strcmp(ucmd,"help")==0) { dooperhelp(unum,tail); return; } 
     if (strcmp(ucmd,"showcommands")==0) { dooperhelp(unum,tail); return; }
     if (strcmp(ucmd,"channel")==0) { dochancmd(unum,tail); return; }
     if (strcmp(ucmd,"compare")==0) { dochancmp(unum,tail); return; }
@@ -684,7 +687,7 @@ void handleprivmsg() {
     if (strcmp(ucmd,"serverlist")==0) { doserverlist(unum,tail); return; }
     if (strcmp(ucmd,"changelev")==0) { dochangelev(unum,tail); return; }
     if (strcmp(ucmd,"deluser")==0) { dodelusercmd(unum,tail); return; }
-    if (strcmp(ucmd,"kick")==0) { dokickcmd(unum,tail); return; }
+    if (strcmp(ucmd,"xkick")==0) { dokickcmd(unum,tail); return; }
     if (strcmp(ucmd,"listauthed")==0) { dolistauthed(unum,tail); return; }
     if (strcmp(ucmd,"save")==0) { dosave(unum,tail); return; }
     if (strcmp(ucmd,"deopall")==0) { dodeopall(unum,tail); return; }
@@ -719,7 +722,7 @@ void handleprivmsg() {
     if (ucmd[0]==1) { doctcp(unum, tail); return; }
     msgtouser(unum,"Unknown command.");
   } else {
-    msgtouser(unum,"This command is either unknown, or you need to be opered up to use it.");
+    msgtouser(unum,"Unknown command..");
   }
 }
 
@@ -1135,8 +1138,8 @@ void handleremotewhois() {
     if (strcmp(&params[3][0],tmpnick)==0) {
       /* Send whois replies */
       sendtouplink("%s 311 %s %s %s %s * :%s\r\n",servernumeric,sender,fu[i].nick,fu[i].ident,fu[i].host,fu[i].realname);
-      sendtouplink("%s 319 %s %s :/dev/null\r\n",servernumeric,sender,fu[i].nick);
-      sendtouplink("%s 312 %s %s some.very.cool.server :This is Operserv %s\r\n",servernumeric,sender,fu[i].nick,operservversion);
+      sendtouplink("%s 319 %s %s :irc.xchannel.org\r\n",servernumeric,sender,fu[i].nick);
+      sendtouplink("%s 312 %s %s xevres.xchannel.org :Xevres %s\r\n",servernumeric,sender,fu[i].nick,operservversion);
       sendtouplink("%s 317 %s %s 0 %ld :seconds idle, signon time\r\n",servernumeric,sender,fu[i].nick,fu[i].connectat);
       if ((fu[i].numeric % SRVNUMMULT)<10) {
         sendtouplink("%s 313 %s %s :is an IRC Operator\r\n",servernumeric,sender,fu[i].nick);

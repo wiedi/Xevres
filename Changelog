@@ -1,0 +1,20 @@
+Wed Jun 23 23:01:09 CEST 2004	Wiedi	<wiedi@elbone.net>
+	* Added: Internal Event Handler (now you can use the channel module without the 
+	                                 auth module and vise versa, but if both modules
+	                                 are loaded they can communicated with each other)
+	* Auth Module Added: IEvent for user authing
+	* Chan Module Added: IEvent for user authing (user gets chanflags on authing)
+	* Chan Module Bugfix: Module can now be loaded with the config file ;D
+
+Wed Jun 23 18:51:13 CEST 2004	Wiedi	<wiedi@elbone.net>
+	* Channel Module Bugfix: Creator kick command (name only kick didn't work right)
+	* Channel Module: Finished the Operator kick command
+	* xevres.c: Fixed the usermodes for X
+
+Mon Jun 21 23:02:01 CEST 2004	Wiedi	<wiedi@elbone.net>
+	* Channel Module: Finished Creator Kick Command (wildcards rock ;-)
+
+Mon Jun 21 21:27:12 CEST 2004	Wiedi	<wiedi@elbone.net>
+	* Channel Module: Fixed most commands. Now they don't desync X to the network
+
+=== 0.7 is released ==

@@ -1,7 +1,8 @@
 /*
-Operservice 2 - general.c
+Xevres (based on Operservice 2) - general.c
 These are general purpose functions used by O or its modules.
 (C) Michael Meier 2000-2001 - released under GPL
+(C) Sebastian Wiedenroth 2004
 -----------------------------------------------------------------------------
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -617,14 +618,15 @@ int isircop(long num) {
 }
 
 int checkauthlevel(long unum, int minlevel) {
-  char tmps2[TMPSSIZE];
-  if (getauthlevel(unum)>=minlevel) {
-    return 1;
-  } else {
-    sprintf(tmps2,"This command requires at least authlevel %d (your level: %d)",minlevel,getauthlevel(unum));
-    msgtouser(unum,tmps2);
-    return 0;
-  }
+ /* char tmps2[TMPSSIZE]; */
+ if (getauthlevel(unum)>=minlevel) {
+  return 1;
+ } else {
+  /* sprintf(tmps2,"This command requires at least authlevel %d (your level: %d)",minlevel,getauthlevel(unum));
+     msgtouser(unum,tmps2); 
+  */    
+  return 0;   
+ }
 }
 
 serverdata * getsdptr(long numeric) {

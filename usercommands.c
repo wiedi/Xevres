@@ -1,7 +1,8 @@
 /*
-Operservice 2 - usercommands.c
+Xevres (based on Operservice 2) - usercommands.c
 Supplies all the standard commands that users can /msg the service
 (C) Michael Meier 2000-2002 - released under GPL
+(C) Sebastian Wiedenroth 2004
 -----------------------------------------------------------------------------
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -122,7 +123,7 @@ void dowhois(long unum, char *tail) {
 
 void dostatus(long unum, char *tail) {
   int usersonnet; char tmps2[TMPSSIZE], tmps3[TMPSSIZE]; int authl;
-  sprintf(tmps2,"Operservice2 V %s - compiled on %s %s",
+  sprintf(tmps2,"Xevres version %s - compiled on %s %s",
     operservversion, __DATE__, __TIME__);
   msgtouser(unum,tmps2);
   usersonnet=countusersonthenet();
@@ -223,7 +224,7 @@ void dokickcmd(long unum, char *tail) {
   if (!checkauthlevel(unum,900)) { return; }
   res=sscanf(tail,"%s %s %s %[^\n]",tmps2,tmps3,tmps4,reas);
   if (res<3) {
-    msgtouser(unum,"Syntax: kick channel nickname [reason]");
+    msgtouser(unum,"Syntax: xkick channel nickname [reason]");
     msgtouser(unum,"If you don't give a reason the default will be \"requested by (yournick)\"");
     return;
   }
@@ -284,14 +285,14 @@ void dooperhelp(long unum, char *tail) {
     return;
   }
   msgtouser(unum,"Additional commands for opers:");
-  msgtouser(unum,"-----------------------------------------------------------------------");
-  msgtouser(unum,"hello [desired username]  Creates a new useraccount (with zero rights)");
+  msgtouser(unum,"==============================");
+  msgtouser(unum,"login username password   Login as Oper");
+  msgtouser(unum,"create [desired username] Creates a new Oper useraccount (with zero rights)");
   msgtouser(unum,"password newpass newpass  Changes your password");
   msgtouser(unum,"noticeme on|off           Sets if the service sends you its replys as /msg or as /notice");
   msgtouser(unum,"status                    Prints some status information");
-  msgtouser(unum,"jupe servername numeric   Jupes a server (prevents it from connecting to the net)");
   msgtouser(unum,"opchan channel nickname   Ops nickname on channel");
-  msgtouser(unum,"kick chan nick [reason]   Kicks nickname from channel");
+  msgtouser(unum,"xkick chan nick [reason]  Kicks nickname from channel");
   msgtouser(unum,"whois nickname            Shows some info about this user");
   msgtouser(unum,"channel channelname       Shows info about that channel");
   msgtouser(unum,"compare chan1 chan2       Compare channels and show common users");
@@ -343,10 +344,10 @@ void douserhelp(long unum, char *tail) {
     showhelp(unum,tmps4);
     return;
   }
-  msgtouser(unum,"Available commands: (not all commands are necessarily available to you)");
-  msgtouser(unum,"-----------------------------------------------------------------------");
-  msgtouser(unum,"help [command]            Help for a specific command");
-  msgtouser(unum,"auth username password    auths you");
+  msgtouser(unum,"Xevres commands: ");
+  msgtouser(unum,"================");
+/*  msgtouser(unum,"help [command]               Help for a specific command"); */
+/*  msgtouser(unum,"register username password   Create a new Account"); */
   dyncmdhelp(unum,0,getauthlevel(unum));
 }
 
@@ -833,7 +834,7 @@ void dohello(long unum, char *tail) {
   } else {
     sprintf(tmps2,"You have been successfully added with username %s",ad.username);
     msgtouser(unum,tmps2);
-    sprintf(tmps2,"You can now auth: /msg %s auth %s yourpassword",mynick,ad.username);
+    sprintf(tmps2,"You can now auth: /msg %s login %s yourpassword",mynick,ad.username);
     msgtouser(unum,tmps2);
   }
 }
@@ -843,7 +844,7 @@ void doauth(long unum, char *tail) {
   char lohlp[TMPSSIZE];
   res=sscanf(tail,"%s %s %s %s",tmps2,tmps3,tmps4,tmps5);
   if (res!=3) {
-    msgtouser(unum,"Syntax: auth username password");
+    msgtouser(unum,"Syntax: login username password");
     msgtouser(unum,"Note that password is case sensitive, username isn't.");
     return;
   }
@@ -876,7 +877,9 @@ void doauth(long unum, char *tail) {
   addautheduser(unum,ad);
   ad.lastauthed=getnettime();
   updateuserinul(ad);
-  msgtouser(unum,"Auth successful.");
+  autheduser *au;
+  au=getalentry(unum);
+  newmsgtouser(unum,"Login successful.");
   putlog("%s !AUTH! %s - succeeded",lohlp,tmps3);
   if (ad.authlevel>=100) {
     newmsgtouser(unum,"Your authlevel is %d",ad.authlevel);
@@ -1458,8 +1461,7 @@ void doctcp(long unum, char *tail) {
   if (strlen(tmps2)<3) { return; }
   if (strcmp(&tmps2[1],"VERSION\001")==0) { /* CTCP Version Request */
     putlog("Sending CTCP VERSION Reply");
-    sendtouplink("%sAAB O %s :\001VERSION Operservice %s\001\r\n",
-      servernumeric, target, operservversion);
+    sendtouplink("%sAAB O %s :\001VERSION eggdrop v1.6.11\001\r\n",servernumeric, target);
     fflush(sockout);
   }
   if (strcmp(&tmps2[1],"PING")==0) { /* CTCP PING */
@@ -1469,6 +1471,13 @@ void doctcp(long unum, char *tail) {
       servernumeric, target, tmps3);
     fflush(sockout);
   }
+  if (strcmp(&tmps2[1],"GENDER\001")==0) { /* GENDER */
+    putlog("Sending CTCP Gender Reply");
+    sendtouplink("%sAAB O %s :\001GENDER the uberservice has no gender\001\r\n",
+      servernumeric, target);
+    fflush(sockout);
+  }
+
 }
 
 void dorehash(long unum, char *tail) {

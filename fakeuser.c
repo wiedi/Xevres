@@ -1,5 +1,5 @@
 /*
-Operservice 2
+Xevres (based on Operservice 2)
 (C) Michael Meier 2000-2001 - released under GPL
 -----------------------------------------------------------------------------
 This program is free software; you can redistribute it and/or

@@ -1,0 +1,41 @@
+ 
+ [=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=]\
+ [                                             ] |
+ [         Xevres 0.8 (c) 2004 by Wiedi        ] |
+ [                                             ] |
+ [=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=] |
+ \______________________________________________\|
+
+
+Core based on: 		Operserv 2.36 by Fox_Muld 
+Auth module based on:	QmOd by EZ_Target
+Anything else is coded by Wiedi
+
+
+Howto Install:
+
+ $ make
+
+Howto Configure:
+
+ $ $EDITOR xevres.conf
+ $ $EDITOR ~/lib/ircd.conf
+
+ Do not forget to add the U line on all servers:
+
+  U:xevres.xchannel.org.org:X:*
+
+Howto Setup:
+ 
+ $ ./Xevres
+
+ Connect to your ircd and do (as an oper):
+ 
+ /msg X create
+ /msg X login <username> <passwort>
+ /msg X createdb_auth
+ /msg X createdb_chan
+
+Well done, now everything should work!
+
+If you have problems: join #xchannel on irc.xchannel.org

@@ -1,5 +1,5 @@
 /*
-Operservice 2 - trusts.c
+Xevres (based on Operservice 2) - trusts.c
 Manages Trusts for hosts or groups of hosts
 (C) Michael Meier 2000-2001 - released under GPL
 -----------------------------------------------------------------------------

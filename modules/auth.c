@@ -144,7 +144,6 @@ void doxpasswd(long unum, char *tail) {
 }
 
 void docreatexdb(long unum, char *tail) {
-  if (!checkauthlevel(unum,999)) { return; }
   msgtouser(unum,"Attempting to make the X user database");
   mysql_query(&sqlcon,"CREATE TABLE Xusers (username varchar(40) NOT NULL, password varchar(40) NOT NULL, authlevel int(11) DEFAULT '0' NOT NULL, lastauthed bigint, PRIMARY KEY (username), UNIQUE username (username))");
   msgtouser(unum,"Yeah Done");
@@ -156,7 +155,6 @@ void dogetxpasswd(long unum, char *tail) {
   int res2;
   MYSQL_RES *myres; MYSQL_ROW myrow;
 
-  if (!checkauthlevel(unum,900)) { return; }
   res2=sscanf(tail,"%s %s %s",tmps2,tmps3,tmps4);
 
   if (res2 != 2) {
@@ -185,7 +183,6 @@ void doauthsuspend(long unum, char *tail) {
   char tmps2[TMPSSIZE], tmps3[TMPSSIZE], tmps4[TMPSSIZE];
   userdata *reqrec;
   int res2;
-  if (!checkauthlevel(unum,800)) { return; }
   MYSQL_RES *myres; MYSQL_ROW myrow;
   reqrec=getudptr(unum);
   res2=sscanf(tail,"%s %s %s",tmps2,tmps3,tmps4);
@@ -229,7 +226,6 @@ void doauthunsuspend(long unum, char *tail) {
   char tmps2[TMPSSIZE], tmps3[TMPSSIZE], tmps4[TMPSSIZE];
   userdata *reqrec;
   int res2;
-  if (!checkauthlevel(unum,800)) { return; }
   MYSQL_RES *myres; MYSQL_ROW myrow;
   reqrec=getudptr(unum);
   res2=sscanf(tail,"%s %s %s",tmps2,tmps3,tmps4);
@@ -255,13 +251,13 @@ void doauthunsuspend(long unum, char *tail) {
 
 void auth_init() {
   setmoduledesc(MODNAM,"Xevres Auth module");
-  registercommand(MODNAM,"auth", doxauth, 0,"auth\tAuth's you with X");
-  registercommand(MODNAM,"register", doxhello, 0,"register\tRegister a new Account");
-  registercommand(MODNAM,"chpasswd", doxpasswd, 0, "chpasswd\tAlters your X password");
-  registercommand(MODNAM,"getpass", dogetxpasswd, 1, "getpass\tfor use with the Relay bot");
-  registercommand(MODNAM,"authsuspend", doauthsuspend, 1, "authsuspend\tSuspend a users auth");
-  registercommand(MODNAM,"authunsuspend", doauthunsuspend, 1, "authunsuspend\tUnsuspend a users auth");
-  registercommand(MODNAM,"createdb_auth", docreatexdb, 1, "createdb_auth\tCreates the database which holds X useinfo");
+  registercommand2(MODNAM,"auth", doxauth, 0, 0, "auth\tAuth's you with X");
+  registercommand2(MODNAM,"register", doxhello, 0,0, "register\tRegister a new Account");
+  registercommand2(MODNAM,"chpasswd", doxpasswd, 0, 0, "chpasswd\tAlters your X password");
+  registercommand2(MODNAM,"getpass", dogetxpasswd, 1, 900, "getpass\tfor use with the Relay bot");
+  registercommand2(MODNAM,"authsuspend", doauthsuspend, 1, 800, "authsuspend\tSuspend a users auth");
+  registercommand2(MODNAM,"authunsuspend", doauthunsuspend, 1, 800, "authunsuspend\tUnsuspend a users auth");
+  registercommand2(MODNAM,"createdb_auth", docreatexdb, 1, 999, "createdb_auth\tCreates the database which holds X useinfo");
 }
 
 void auth_cleanup() {

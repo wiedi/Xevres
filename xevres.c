@@ -57,7 +57,9 @@ flags chanflags[]={
   {'C',cm_C},
   {'D',cm_D},
   {'r',cm_r},
-  {'u',cm_u}
+  {'u',cm_u},
+  {'O',cm_O},
+  {'F',cm_F}
 };
 int numcf; /* Number of Chanflags */
 flags userflags[]={
@@ -881,6 +883,16 @@ void setchanlim(char *name, int lim) {
 
 void setchanli2(channel *a, int lim) {
   a->chanlim=lim;
+}
+
+void setfwchan(char *name, char *chan) {
+  channel *a;
+  a=getchanptr(name);
+  if (a!=NULL) { mystrncpy(a->fwchan,chan,CHANNELLEN); }
+}
+
+void setfwchan2(channel *a, char *chan) {
+  mystrncpy(a->fwchan,chan,CHANNELLEN);
 }
 
 void setchanflag(char *name, int flags) {

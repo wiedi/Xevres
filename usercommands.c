@@ -501,6 +501,10 @@ void dochancmd(long unum, char *tail) {
     sprintf(tmps4,"Channelkey: %s",a->chankey);
     msgtouser(unum,tmps4);
   }
+  if (isflagset(a->flags,cm_F)) {
+    sprintf(tmps4,"Forwardchan: %s",a->fwchan);
+    msgtouser(unum,tmps4);
+  }
   if (strcmp(a->topic,"")==0) {
     msgtouser(unum,"No topic set");
   } else {

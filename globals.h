@@ -28,6 +28,8 @@
 #define cm_D 1024  // chanmode +D (auditorium)
 #define cm_r 2048  // chanmode +r (only registered users)
 #define cm_u 4096  // chanmode +u (hide PART/QUIT messages)
+#define cm_O 8192  // chanmode +O (Oper only channel)
+#define cm_F 16384  // chanmode +F (Forward Chan)
 
 #define NICKLEN 15     // Maximum nick length
 #define USERLEN 10     // Maximum ident length
@@ -169,6 +171,7 @@ struct channel {
   int flags;
   char chankey[CHANKEYLEN+1]; // Channelkey - if the channel is not +k, the content
                               // of this is undefined!!
+  char fwchan[CHANNELLEN+1];  // for umode +F
   int chanlim;        // Channellimit - same as with chankey
   array users;
   regchannel *reg;
@@ -466,6 +469,8 @@ int chanexists(char *name);
 channel * newchan(char *name, long createdat);
 void setchankey(char *name, char *key);
 void setchanke2(channel *a, char *key);
+void setfwchan(char *name, char *chan);
+void setfwchan2(channel *a, char *chan);
 void saveall(void);
 long countusersonsrv(long num);
 long countopersonsrv(long num);

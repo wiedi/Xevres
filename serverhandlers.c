@@ -583,6 +583,14 @@ void handlemodemsg() {
         }
         continue;
       }
+      if (*c=='O') {
+        if (t2!=1) {
+          setchanfla2(tmpcp,cm_O);
+        } else {
+          delchanfla2(tmpcp,cm_O);
+        }
+        continue;
+      }
       if (*c=='l') {
         if (t2!=1) {
           if (paramcount<=t1) {
@@ -607,6 +615,19 @@ void handlemodemsg() {
           delchanfla2(tmpcp,cm_k);
         }
         t1++;
+        continue;
+      }
+      if (*c=='F') {
+        if (t2!=1) {
+	  if (paramcount<=t1) {
+           putlog("!!! Failed to parse modes: %s !!!",lastline); return;
+          }
+          setfwchan2(tmpcp,params[t1]);
+          setchanfla2(tmpcp,cm_F);
+	  t1++;
+        } else {
+          delchanfla2(tmpcp,cm_F);
+        }
         continue;
       }
       if (*c=='b') {

@@ -1,0 +1,8 @@
+invite (Lvl. 0)
+---------------------------------------
+Syntax:	invite <#channel> [nickname]
+Desc.:	Mithilfe von invite kann man sich selbst in einen Channel einladen, 
+	in dem man die Accessflags +i oder +v besitzt. Wenn man +o, +c oder
+	+n hat, kann man auch andere Benutzer in diesen Channel einladen.
+Beispiel: invite #unterschlupf lozar
+	 Laedt den Benutzer lozar in den Raum #unterschlupf ein

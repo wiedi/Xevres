@@ -416,7 +416,7 @@ void printhelp(long unum, char *hlptxt) {
       tmps2[b]=*a;
     } else {
       if (*a=='\t') {
-        while (b<25) { tmps2[b]=' '; b++; }
+        while (b<7) { tmps2[b]=' '; b++; }
         tmps2[b]=' ';
       }
       if (*a=='\n') {

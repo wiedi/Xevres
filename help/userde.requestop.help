@@ -1,0 +1,11 @@
+requestop (Lvl. 0)
+-----------------------------------------
+Syntax: requestop channel [nickname]
+Desc.:  requestop dient dazu, Operatorenrechte in einem Channel in dem
+	alle Benutzer ihren Operatorstatus verloren haben fuer sich 
+	selbst oder andere Benutzer anzufordern.
+	Geben Sie hier keinen Nicknamen an, so werden die Rechte auf Ihren 
+	Nickname angefordert.
+Example: requestop #quake.xyz Sucker
+         Hiermit wird der Operatorenstatus fuer den Benutzer Sucker im Raum 
+	 #quake.xyz angefordert.

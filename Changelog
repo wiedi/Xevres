@@ -1,3 +1,9 @@
+Fri Dec 10 15:39:05 CET 2004	Wiedi	<wiedi@elbone.net>
+	* Some bugfixes
+
+Sun Nov 14 13:52:01 CET 2004	Nioerdir <dan@ani4u.de>
+	* Added german help translation
+
 Wed Nov 10 19:55:26 CET 2004	Wiedi	<wiedi@elbone.net>
 	* Fixed some bugs in chan.c
 	* chan.c has now a request command *needs testing*

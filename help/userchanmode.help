@@ -1,5 +1,11 @@
 chanmode (Lvl. 0)
 ---------------------------------------
-example:
-chanmode #chan +mko geheim hans
+Syntax:	chanflag <#channel> [<+|-><flags>] [arguments]
+Desc.:	This command can be used to set chanmodes without having 
+	the operator chanmode, but you need to have at least the
+	operator accessflag. It can be used analog to the MODE command
+	of the ircd.
+Example: chanmode #chan +mko geheim hans
+	Sets the channel #chan moderated, sets a channel key "geheim" and 
+	gives the user hans operator status.
 

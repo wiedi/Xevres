@@ -1,0 +1,35 @@
+chanflag (Lvl. 0)
+---------------------------------------
+Syntax:	chanflag <#channel> [<+|-><flags>]
+Desc.:	'chanflag' dient dazu, die Flags, die auf einen bestimmten Channel 
+	gesetzt sind anzuzeigen und zu verwalten. Die Chanflags erlauben es, 
+	einzustellen, wie X in einem Channel agieren soll.
+	Verfuegbare Chanflags sind:
+	  +v (voice)	Jeder Benutzer der den Channel betritt, wird +v gesetzt.
+	  +p (protect)	Benutzer, die +o gesetzt sind, koennen nicht -o (deopped)
+			gesetzt werden.
+	  +f (force)	Benutzer mit Accessflags in diesem Channel werden zu
+			den entsprechenden Chanmodes gezwungen.
+	  +s (secure)	Nur X und der Besitzer des Channels koennen 
+			Channeloperator werden.
+	  +l (limit)	Das Limit fuer die max. Benutzeranzahl wird automatisch 
+			gesetzt. Dieser Flag benoetigt weiterhin ein Argument, 
+			welches mit dem chanset-Kommando uebergeben werden kann.
+			Ist dieser Flag aktiviert und wurde ein Limit-Argument 
+			gesetzt, aendert X die max. Benutzeranzahl Ihres 
+			Channels auf die Summe der momentan anwesenden 
+			User zu der Zahl, die als Limit eingegeben wurde.
+	  +w (welcome)	Hiermit wird Usern, die den Channel betreten, eine 
+			Willkommensnachricht per Notice	uebermittelt.
+	  +i (invite)	Setzt den Chanmode +i
+	  +h (hidden)	Setzt den Chanmode +s (secret)
+	  +k (key)	Setzt den Chanmode +k
+			Weiterhin muss auch noch ein Key-Argument (Passwort) 
+			angegeben werden.
+
+
+Beispiel: chanflag #xchannel +vslw
+	Benutzer, die den Channel betreten, werden auf +v (voice) gesetzt und 
+	erhalten eine Willkommensnachricht per Notice. Ausserdem kann 
+	niemand Channeloperator werden und das Userlimit wird automatisch 
+	gesetzt.

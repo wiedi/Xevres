@@ -1,0 +1,22 @@
+chanset (Lvl. 0)
+---------------------------------------
+Syntax:	chanset <#channel> <param> [value]
+Desc.:	Chanset dient dazu, die Argumente fuer die Channelflags anzuzeigen und
+	zu bearbeiten. Um die Argumente anzeigen zu koennen, muss man mindestens 
+	ein Accessflag im Channel besitzen.
+	Moegliche Argumente sind:
+	  limit		Wenn der Chanflag +l gesetzt ist, wird das als Limit eingegebene 
+			Argument (die Zahl) zur Anzahl der momentan im Channel befindlichen 
+			Benutzer addiert und als Benutzerlimit gesetzt.
+			Um diesen Wert zu aendern, wird der Accessflag +o, +c oder +n 
+			benoetigt.
+	  welcome	Die als Argument angegebene Willkommensnachricht wird dem Benutzer 
+			beim betreten des Channels per Notice angezeigt, wenn der Chanflag 
+			+w gesetzt ist. Um diesen Wert zu aendern, wird der Mode +o, +c 
+			oder +n benoetigt.
+	  key		Dieses Argument ist das Passwort, was gesetzt wird, wenn der 
+			Chanflag +k aktiviert wurde. Um diesen Wert zu aendern, wird der 
+			Mode +o, +c oder +n benoetigt.
+
+Beispiel: chanset #xchannel key supersecret
+	 setzt das Channelpasswort auf 'supersecret', wenn der Chanflag +k aktiviert ist.

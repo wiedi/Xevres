@@ -21,6 +21,6 @@ Desc.:	 This command is used to view and manage the chanflags of
 	  +h (hidden)	Will force chanmode +s (secret)
 	  +k (key)	Will force chanmode +k
 			Requires the key argument to be set.
-Example: access #xchannel +vslw
+Example: chanflag #xchannel +vslw
 	joining users will get voice and see a nice welcome message, 
 	nobody can be chanop, the limit is set automatically

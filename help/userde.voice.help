@@ -1,0 +1,9 @@
+voice (Lvl. 0)
+---------------------------------------
+Syntax:	 voice <#channel> [nickname]
+Desc.:	 Hiermit kann man den Voicestatus in einem Channel bekommen, in dem man den 
+	Accessflag +v besitzt. Mit den Accessflags +o, +c oder +n kann man anderen Usern im Channel den
+	Voicestatus geben.
+Beispiel: voice #necronomicon madcat
+	Gibt dem Benutzer madcat im Channel #necronomicon den Voicestatus, wenn man selbst einen
+	der noetigen Accessflags +o, +c, oder +n besitzt.

@@ -1,0 +1,7 @@
+unbanall (Lvl. 0)
+---------------------------------------
+Syntax: unbanall <#channel>
+Desc.:	Dieses Kommando entfernt alle Bans von einem Channel. Um es anzuwenden
+	ist einer der Accessflags +o, +c oder +n noetig.
+Beispiel: unbanall #area51
+	 Entfernt alle Bans vom Channel #area51.

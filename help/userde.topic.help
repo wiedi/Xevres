@@ -1,0 +1,8 @@
+topic (Lvl. 0)
+---------------------------------------
+Syntax:	topic <#channel> <topic>
+Desc.:	Topic wird benutzt, um das Topic eines Channels zu aendern, ohne dass man 
+	selbst geopped sein muss. X setzt das Topic fuer Sie, wenn Sie einen der 
+	Acessflags +o, +c oder +n besitzen.
+Beispiel: topic #necronomicon Klaatu Verata Nikto
+	 Aendert das Thema des Channels #necronomicon auf 'Klaatu Verata Nikto'

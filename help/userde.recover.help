@@ -1,0 +1,8 @@
+recover (Lvl. 0)
+---------------------------------------
+Syntax: recover <#channel>
+Desc.:	recover fuehrt 'unbanall', 'deopall' und 'clearmodes' auf einen Channel aus.
+	Um recover auszufuehren, muessen Sie +c oder +n gesetzt sein.
+Example: recover #fluxbox
+	 Hiermit werden alle Bans, Operatoren und Channelmodis vom Channel #fluxbox entfernt.
+	 Das ist zum Beispiel nach einem Channel-Takeover recht hilfreich.

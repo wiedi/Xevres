@@ -1,0 +1,11 @@
+chanmode (Lvl. 0)
+---------------------------------------
+Syntax: chanflag <#channel> [<+|-><flags>] [arguments]
+Desc.:	Mit diesem Befehl können Channelmodes gesetzt werden ohne
+	Operator status zu haben, allerdings muss man mindestens das 
+	Accessflag +o haben. Der Befehl funktioniert genauso wie der
+	MODE Befehl der IRC Servers.
+Beispiel:
+	chanmode #chan +mko geheim hans
+	Stellt den Channel #chan auf Moderiert, das CHannelpasswort auf 
+	"geheim" und gibt dem user hans Operator status.

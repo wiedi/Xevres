@@ -1,0 +1,9 @@
+op (Lvl. 0)
+---------------------------------------
+Syntax:	op <#channel> [nickname]
+Desc.:	Wenn Sie die benoetigten Accessflags besitzten, koennen Sie mit op 
+	Benutzern Channeloperatorstatus geben. Geben Sie keinen bestimmten 
+	Nicknamen an, werden Sie selbst geopped.
+	Die noetigen Accessflags fuer op sind +o, +c oder +n.
+Example: op #unterschlupf drscream
+	 Hiermit wird der Benutzer drscream im Channel #unterschlupf geopped.

@@ -375,8 +375,8 @@ void ch_chanmode(long unum, char *tail) {
        msgtouser(unum,"Need more parameters (o)");
        return;
      } else {
-       num=nicktonum(p[t1]);
-       if (num==0) {
+       num=nicktonu2(p[t1]);
+       if (num==-1) {
          newmsgtouser(unum,"User %s is not on the network",p[t1]);
          return;
        } 
@@ -414,8 +414,8 @@ void ch_chanmode(long unum, char *tail) {
        msgtouser(unum,"Need more parameters (v)");
        return;
      } else {
-       num=nicktonum(p[t1]);
-       if (num==0) {
+       num=nicktonu2(p[t1]);
+       if (num==-1) {
          newmsgtouser(unum,"User %s is not on the network",p[t1]);
          return;
        } 
@@ -898,7 +898,7 @@ void ch_set(long unum, char *tail) {
  int res;
  cuser *up; rchan *cp;
  
- res=sscanf(tail,"%s %s %s %s",tmps2,tmps3,tmps4,tmps5);
+ res=sscanf(tail,"%s %s %s %[^\n]",tmps2,tmps3,tmps4,tmps5);
  if ((res !=4) && (res !=3)) {
    msgtouser(unum,"chanset usage:");
    newmsgtouser(unum,"/msg %s chanset <#channel> <param> [value]",mynick);
@@ -912,7 +912,7 @@ void ch_set(long unum, char *tail) {
    return;
  }
  
- if (!(up=ch_getchanuser(cp,unum2auth(unum))) || !checkauthlevel(unum,500)) {
+ if (!((up=ch_getchanuser(cp,unum2auth(unum))) || checkauthlevel(unum,500))) {
    newmsgtouser(unum,"You are not known on %s",tmps3);
    return;
  }
@@ -925,7 +925,7 @@ void ch_set(long unum, char *tail) {
      sprintf(tmps5,"%i",cp->flag_limit);
    } else if (strcmp(tmps4,"welcome")==0) {
      sprintf(tmps5,"%s",cp->flag_welcome);
-   } else if (strcmp(tmps4,"key")==0 && (UHasOwner(up) || UHasCoowner(up) || UHasOp(up))) {
+   } else if (strcmp(tmps4,"key")==0 && (UHasOwner(up) || UHasCoowner(up) || UHasOp(up) || checkauthlevel(unum,500))) {
      sprintf(tmps5,"%s",cp->flag_key);
    } else if (strcmp(tmps4,"suspendlevel")==0 && checkauthlevel(unum,600)) {
      sprintf(tmps5,"%i",cp->flag_suspendlevel);
@@ -938,16 +938,16 @@ void ch_set(long unum, char *tail) {
    newmsgtouser(unum,"Flag %s = %s",tmps4,tmps5);
  } else {
    /* modify */
-   if (strcmp(tmps4,"limit")==0 && (UHasOwner(up) || UHasCoowner(up) || UHasOp(up))) {
+   if (strcmp(tmps4,"limit")==0 && (UHasOwner(up) || UHasCoowner(up) || UHasOp(up) || checkauthlevel(unum,500))) {
      if (atoi(tmps5)>10 || atoi(tmps5)<1) {
        msgtouser(unum,"limit has to be between 1 and 10");
        return;
      }  
      cp->flag_limit=atoi(tmps5);
      ch_setlimit(tmps3,cp->flag_limit);
-   } else if (strcmp(tmps4,"welcome")==0 && (UHasOwner(up) || UHasCoowner(up))) {
+   } else if (strcmp(tmps4,"welcome")==0 && (UHasOwner(up) || UHasCoowner(up) || checkauthlevel(unum,500))) {
      mystrncpy(cp->flag_welcome,tmps5,TOPICLEN+1);
-   } else if (strcmp(tmps4,"key")==0 && (UHasOwner(up) || UHasCoowner(up))) {
+   } else if (strcmp(tmps4,"key")==0 && (UHasOwner(up) || UHasCoowner(up) || checkauthlevel(unum,500))) {
      mystrncpy(cp->flag_key,tmps5,CHANKEYLEN+1);
      if (CIsKey(cp)) {
        sendtouplink("%sAAB M %s +k %s\r\n",servernumeric,tmps3,tmps5);
@@ -1115,9 +1115,9 @@ void ch_chanflags(long unum, char *tail) {
  
  res=sscanf(tail,"%s %s %s",tmps2,tmps3,tmps4);
  if ((res !=3) && (res !=2)) {
-   msgtouser(unum,"chanflags usage:");
-   newmsgtouser(unum,"/msg %s chanflags <#channel> [<+|-><flags>]",mynick);
-   newmsgtouser(unum,"For more information do /msg %s help chanflags",mynick);
+   msgtouser(unum,"chanflag usage:");
+   newmsgtouser(unum,"/msg %s chanflag <#channel> [<+|-><flags>]",mynick);
+   newmsgtouser(unum,"For more information do /msg %s help chanflag",mynick);
    return;
  }
  toLowerCase2(tmps3);
@@ -1126,7 +1126,7 @@ void ch_chanflags(long unum, char *tail) {
    return;
  }
  
- if (!(up=ch_getchanuser(cp,unum2auth(unum))) || !checkauthlevel(unum,500)) {
+ if (!((up=ch_getchanuser(cp,unum2auth(unum))) || checkauthlevel(unum,500))) {
    newmsgtouser(unum,"You don't have permission on %s",tmps3);
    return;
  }
@@ -1923,7 +1923,7 @@ void ch_ieac(char *xarg) {
          um=getchanmode2(cx[i],ux->numeric);
          if (um<0) { continue; }
          if (!isflagset(um,um_o)) { 
-           if (UHasOp(up) && UHasAuto(up)) {
+           if (UHasOp(up) && UHasAuto(up) && !CIsSecuremode(cp)) {
              sendtouplink("%sAAB M %s +o %s\r\n",servernumeric,cx[i]->name,tmps2);
 	     fflush(sockout);
              sim_mode(cx[i]->name,"+o",tokentolong(tmps2));

@@ -1,0 +1,7 @@
+clearmodes (Lvl. 0)
+---------------------------------------
+Syntax: clearmodes <#channel>
+Desc.:	Entfernt die Channelmodi r, i, k, l, und m, wenn Sie die noetigen 
+	Accessflags (+o, +c oder +n) besitzen.
+Beispiel: clearmodes #slackware
+	Entfernt das Channelpassword und andere Modi, sofern diese gesetzt sind.

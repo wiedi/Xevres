@@ -1,0 +1,9 @@
+deopall (Lvl. 0)
+---------------------------------------
+Syntax: deopall <#channel>
+Desc.:	Entfernt den Operatorenstatus aller Benutzer eines Channels.
+	Man muss das Accessflag +o, +c oder +n besitzen, um diesen Befehl
+	anwenden zu koennen.
+Beispiel: deopall #area51
+	Alle Benutzer im Channel #area51 werden deopped.
+	Lediglich X behaelt seinen Operatorenstatus.

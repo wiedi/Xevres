@@ -1281,7 +1281,6 @@ void showhelp(long unum, char *command) {
   delchar(tmps2,'/');
   delchar(tmps2,'\\');
   delchar(tmps2,':');
-  delchar(tmps2,'.');
   strcat(fnam,tmps2);
   strcat(fnam,".help");
   helpfile=fopen(fnam,"r");
@@ -1294,7 +1293,7 @@ void showhelp(long unum, char *command) {
     if (res!=NULL) {
       delchar(tmps2,'\r');
       delchar(tmps2,'\n');
-      msgtouser(unum,tmps2);
+      printhelp(unum,tmps2);
     }
   } while (res!=NULL);
   msgtouser(unum,"--- End of help ---");

@@ -1,0 +1,15 @@
+kick (Lvl. 0)
+---------------------------------------
+Syntax:  (1) kick <#channel> <nick> [reason]
+ 	 (2) kick <#channel> <nick>[!ident@host] [reason]
+Desc.:	 (1) Wenn man den Accessflag +o in einem Channel besitzt, 
+	     kann man kick benutzen, um einen User aus diesem Channel zu werfen (kicken).
+	 (2) Wenn man den Accessflag +c oder +n in einem Channel besitzt,
+	     kann man kick mit Wildcards benutzen, um Benutzer mit gleichen Nicknameteilen,
+	     Hostmaskteilen oder Identteilen aus diesem Channel zu kicken.
+
+	     Wenn Sie keinen Grund (reason) angeben, wird als Kickmessage 
+	     "Requested by <IhremNick>" angezeigt.
+Beispiel: kick #xchannel *!*@spamhost.co.uk we do not like you
+	 Im Beispiel werden alle Benutzer mit dem Hostmaskenteil spamhost.co.uk aus dem
+	 Channel #xchannel gekickt. Als Grund wird "we do not like you" angezeigt.

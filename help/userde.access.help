@@ -1,0 +1,40 @@
+access (Lvl. 0)
+---------------------------------------
+Syntax:	 access <#channel> [<nickname|#account> <+|-><flags>]
+Desc.:	'access' dient dazu, die Accessflags eines Channels anzuzeigen und 
+	zu bearbeiten. Um die Accessliste eines Channels anzuzeigen, musst du
+	mindestens ein Accessflag in diesen Channel haben.
+	Wenn du die Accessflags bearbeiten moechtest, muesst du +c oder +n 
+	haben. 	Nur +n-User koennen den +n-Flag fuer andere User setzen oder 
+	aufheben. Der Accessflag +l kann nur auf sich selbst gesetzt bzw. 
+	aufgehoben werden.
+	Verfuegbare Accessflags sind:
+
+	  +g (give) 	Wenn Sie die Flag fuer +v (voice) haben, bekommen Sie +v 
+			beim betreten des Channels.
+	  +v (voice)	Ist dieser Flag gesetzt, haben Sie die Berechtigung, 
+			voice zu erhalten.
+	  +a (auto)	Wenn Sie die Flags fuer +v (voice) oder +o (operator) 
+			haben, bekommen Sie den entsprechenden mode bei
+			betreten des Channels.
+	  +o (operator)	Hiermit haben Sie die Berechtigung Channeloperator zu 
+			sein, voice zu geben, andere einzuladen, das Thema zu 
+			aendern, User zu kicken, den Befehl 'unbanall' (alle 
+			Bans von einem Channel entfernen), 'deopall' (alle 
+			derzeitigen Channeloperatoren -o setzen), 
+			'clearmode' (dem Channel alle Modis entziehen) und sich 
+			selbst +l zu setzen.
+	  +i (invite)	Hiermit koennen Sie sich selbst in den Channel einladen.
+	  +l (log)	Diese besondere Flag kann auf Sie selbst gesetzt und 
+			entfernt werden. Wenn Sie +l gesetzt sind, erhalten 
+			Sie Nachrichten ueber Befehle, die andere benutzer 
+			auf Ihren Channel anwenden.
+	  +c (coowner)	Die Flag entspricht der Owner-Flag, mit der 
+			Beschraenkung, dass man keine anderen Owner setzen kann.
+	  +n (onwer)	Der Owner hat Zugriff auf alle Kommandos zur Verwaltung 
+			des Channels und der User.
+
+Beispiel: access #unterschlupf lozar +ao
+	Der Benutzer lozar bekommt Channeloperatorenstatus im Channel 
+	#unterschlupf bei betreten dieses Channels und hat Zugriff auf alle 
+	Befehle, die Operatoren erlaubt sind.

@@ -1,0 +1,5 @@
+Note for opers: 
+	"chanfix" will be used to determine whether there are regular ops on
+        the channel that could be opped. If it finds some, they (and not the
+        one requested!) will be opped. If chanfix doesn't know who should be 	 
+        op, the requested person will be opped.

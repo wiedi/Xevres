@@ -1,0 +1,7 @@
+	+S (Suspended)	The channel is suspended. 
+			You should use the suspend command!
+			argument: suspend_level
+	+F (Forward)	Channel alias.
+			argument: fwchan
+
+The oper help should be rewritten :>

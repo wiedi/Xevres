@@ -15,7 +15,7 @@ xevres connect4 module (a clone to beware's and plugwash's fp connect4)
 #include <string.h>
 #include "globals.h"
 #define MODNAM "connect4"
-#define MVERSION "1.2"
+#define MVERSION "1.3"
 
 /* Some options */
 /* Mirc Color Code Char */
@@ -137,6 +137,9 @@ void c4_chmsg(long unum, char *chan, char *tail) {
 	if (ux==-1) {
 	  cmsgffake(chan,"c","User %s not on channel", tmps3, chan);
 	  return;
+	} else if (ux==unum) {
+	  cmsgffake(chan,"c","You can't play against yourself!");
+	  return;  
 	} else {
 	  /* start the game */
 	  gamez[cid].pl1=unum;

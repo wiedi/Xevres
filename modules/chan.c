@@ -192,7 +192,8 @@ void ch_invite(long unum, char *tail) {
    newmsgtouser(unum,"I am not on %s",tmps3);
    return;
  }
- if (!(up=ch_getchanuser(cp,unum2auth(unum))) && !UHasInvite(up) && !UHasVoice(up) && !UHasOp(up) && !UHasCoowner(up) && !UHasOwner(up) && !checkauthlevel(unum,200)) {
+ up=ch_getchanuser(cp,unum2auth(unum));
+ if (!(UHasInvite(up) || UHasVoice(up) || UHasOp(up) || UHasCoowner(up) || UHasOwner(up)) && !checkauthlevel(unum,200)) {
    msgtouser(unum,"You don't have the permission");
    return;
  }
@@ -235,7 +236,8 @@ void ch_topic(long unum, char *tail) {
    newmsgtouser(unum,"I am not on %s",tmps3);
    return;
  }
- if (!(up=ch_getchanuser(cp,unum2auth(unum))) && !UHasOp(up) && !UHasCoowner(up) && !UHasOwner(up) && !checkauthlevel(unum,300)) {
+ up=ch_getchanuser(cp,unum2auth(unum));
+ if (!(UHasOp(up) || UHasCoowner(up) || UHasOwner(up)) && !checkauthlevel(unum,300)) {
    msgtouser(unum,"You don't have the permission");
    return;
  }
@@ -269,7 +271,8 @@ void ch_kick(long unum, char *tail) {
    newmsgtouser(unum,"I am not on %s",tmps3);
    return;
  }
- if (!(up=ch_getchanuser(cp,unum2auth(unum))) && !UHasOp(up) && !UHasCoowner(up) && !UHasOwner(up) && !checkauthlevel(unum,400)) {
+ up=ch_getchanuser(cp,unum2auth(unum));
+ if (!(UHasOp(up) || UHasCoowner(up) || UHasOwner(up)) && !checkauthlevel(unum,400)) {
    msgtouser(unum,"You don't have the permission");
    return;
  }
@@ -356,7 +359,8 @@ void ch_chanmode(long unum, char *tail) {
    newmsgtouser(unum,"I am not on %s",tmps3);
    return;
  }
- if (!(up=ch_getchanuser(cp,unum2auth(unum))) && !UHasOp(up) && !UHasCoowner(up) && !UHasOwner(up) && !checkauthlevel(unum,400)) {
+ up=ch_getchanuser(cp,unum2auth(unum));
+ if (!(UHasOp(up) || UHasCoowner(up) || UHasOwner(up)) && !checkauthlevel(unum,400)) {
    msgtouser(unum,"You don't have the permission");
    return;
  }
@@ -364,6 +368,7 @@ void ch_chanmode(long unum, char *tail) {
    msgtouser(unum,"Channel is suspended!");
    if (!isircop(unum)) { return; }
  }
+ ch_msgtolog(cp,"%s(%s) set chanmode %s",unum2nick(unum),unum2auth(unum),tmps5);
  pcount=sscanf(tmps5,"%s %s %s %s %s %s",p[0],p[1],p[2],p[3],p[4],p[5]);
  c=&tmps4[0];
  ncp=cp->cptr;
@@ -683,11 +688,12 @@ void ch_unbanall(long unum, char *tail) {
   return;
  }
  toLowerCase2(tmps3);
- if (!(cp=ch_getchan(tmps3))) {
+ if ((cp=ch_getchan(tmps3))) {
    newmsgtouser(unum,"I am not on %s",tmps3);
    return;
  }
- if (!(up=ch_getchanuser(cp,unum2auth(unum))) && !UHasOp(up) && !UHasCoowner(up) && !UHasOwner(up) && !checkauthlevel(unum,400)) {
+ up=ch_getchanuser(cp,unum2auth(unum));
+ if (!(UHasOp(up) || UHasCoowner(up) || UHasOwner(up)) && !checkauthlevel(unum,400)) {
    msgtouser(unum,"You don't have the permission");
    return;
  }
@@ -718,7 +724,8 @@ void ch_deopall(long unum, char *tail) {
    newmsgtouser(unum,"I am not on %s",tmps3);
    return;
  }
- if (!(up=ch_getchanuser(cp,unum2auth(unum))) && !UHasOp(up) && !UHasCoowner(up) && !UHasOwner(up) && !checkauthlevel(unum,400)) {
+ up=ch_getchanuser(cp,unum2auth(unum));
+ if (!(UHasOp(up) || UHasCoowner(up) || UHasOwner(up)) && !checkauthlevel(unum,400)) {
    msgtouser(unum,"You don't have the permission");
    return;
  }
@@ -751,7 +758,8 @@ void ch_clearchan(long unum, char *tail) {
    newmsgtouser(unum,"I am not on %s",tmps3);
    return;
  }
- if (!(up=ch_getchanuser(cp,unum2auth(unum))) && !UHasOp(up) && !UHasCoowner(up) && !UHasOwner(up) && !checkauthlevel(unum,400)) {
+ up=ch_getchanuser(cp,unum2auth(unum));
+ if (!(UHasOp(up) || UHasCoowner(up) || UHasOwner(up)) && !checkauthlevel(unum,400)) {
    msgtouser(unum,"You don't have the permission");
    return;
  }
@@ -809,7 +817,8 @@ void ch_recover(long unum, char *tail) {
    newmsgtouser(unum,"I am not on %s",tmps3);
    return;
  }
- if (!(up=ch_getchanuser(cp,unum2auth(unum))) && !UHasCoowner(up) && !UHasOwner(up) && !checkauthlevel(unum,400)) {
+ up=ch_getchanuser(cp,unum2auth(unum));
+ if (!(UHasOp(up) || UHasCoowner(up) || UHasOwner(up)) && !checkauthlevel(unum,400)) {
    msgtouser(unum,"You don't have the permission");
    return;
  }
@@ -882,7 +891,8 @@ void ch_chaninfo(long unum, char *tail) {
    newmsgtouser(unum,"%s",cp->info);
    return;
  } else {
-   if (!(up=ch_getchanuser(cp,unum2auth(unum))) && !UHasCoowner(up) && !UHasOwner(up) && !checkauthlevel(unum,500)) {
+ up=ch_getchanuser(cp,unum2auth(unum));
+   if (!(UHasCoowner(up) || UHasOwner(up)) && !checkauthlevel(unum,500)) {
      newmsgtouser(unum,"You are not known on %s",tmps3);
      return;
    }    
@@ -911,8 +921,8 @@ void ch_set(long unum, char *tail) {
    newmsgtouser(unum,"I am not on %s",tmps3);
    return;
  }
- 
- if (!((up=ch_getchanuser(cp,unum2auth(unum))) || checkauthlevel(unum,500))) {
+ up=ch_getchanuser(cp,unum2auth(unum));
+ if (up->aflags==0 || !checkauthlevel(unum,500)) {
    newmsgtouser(unum,"You are not known on %s",tmps3);
    return;
  }
@@ -939,8 +949,8 @@ void ch_set(long unum, char *tail) {
  } else {
    /* modify */
    if (strcmp(tmps4,"limit")==0 && (UHasOwner(up) || UHasCoowner(up) || UHasOp(up) || checkauthlevel(unum,500))) {
-     if (atoi(tmps5)>10 || atoi(tmps5)<1) {
-       msgtouser(unum,"limit has to be between 1 and 10");
+     if (atoi(tmps5)>15 || atoi(tmps5)<1) {
+       msgtouser(unum,"limit has to be between 1 and 15");
        return;
      }  
      cp->flag_limit=atoi(tmps5);
@@ -959,7 +969,12 @@ void ch_set(long unum, char *tail) {
      cp->flag_suspendlevel=atoi(tmps5);
    } else if (strcmp(tmps4,"fwchan")==0 && checkauthlevel(unum,600)) {
      toLowerCase2(tmps5);
-     mystrncpy(cp->flag_fwchan,tmps5,CHANNELLEN+1);       
+     mystrncpy(cp->flag_fwchan,tmps5,CHANNELLEN+1);      
+     if (CIsForward(cp)) {
+       sendtouplink("%sAAB M %s +F %s\r\n",servernumeric,cp->name,cp->flag_fwchan);
+       setchanflag(tmps3,cm_F);
+       setfwchan(tmps3,cp->flag_fwchan);
+     }
    } else {
      msgtouser(unum,"Unknown flag or no permission.");
      return;
@@ -988,7 +1003,8 @@ void ch_access(long unum, char *tail) {
    newmsgtouser(unum,"I am not on %s",tmps3);
    return;
  }
- if (!((up=ch_getchanuser(cp,unum2auth(unum))) || checkauthlevel(unum,500))) {
+ up=ch_getchanuser(cp,unum2auth(unum));
+ if (up->aflags==0 || !checkauthlevel(unum,500)) {
    newmsgtouser(unum,"You are not known on %s",tmps3);
    return;
  }
@@ -1125,8 +1141,8 @@ void ch_chanflags(long unum, char *tail) {
    newmsgtouser(unum,"I am not on %s",tmps3);
    return;
  }
- 
- if (!((up=ch_getchanuser(cp,unum2auth(unum))) || checkauthlevel(unum,500))) {
+ up=ch_getchanuser(cp,unum2auth(unum));
+ if (up->aflags==0 || !checkauthlevel(unum,500)) {
    newmsgtouser(unum,"You don't have permission on %s",tmps3);
    return;
  }
@@ -1759,7 +1775,11 @@ void ch_setlimit(char *chan, int lim) {
  channel *c;
  c=getchanptr(chan);
  if (c==NULL) { return; }
- sendtouplink("%sAAB M %s +l %i\r\n",servernumeric,chan,c->users.cursi+lim);
+ if (c->users.cursi!=1) {
+   sendtouplink("%sAAB M %s +l %i\r\n",servernumeric,chan,c->users.cursi+lim);
+ } else {
+   sendtouplink("%sAAB M %s +l 31337\r\n",servernumeric,chan);
+ }  
  fflush(sockout);
  setchanfla2(c,cm_l);
  setchanli2(c,c->users.cursi+lim);

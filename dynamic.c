@@ -288,13 +288,14 @@ void regfchanmsg(char *mod, char *nick, void *func) {
   sh=(fchmsg *)fchanmsglist[hasch].content;
   sh[i].func=func;
   mystrncpy(sh[i].providedby,mod,MODNAMELEN);
-  toLowerCase(sh[i].providedby);
+//  toLowerCase(sh[i].providedby);
   mystrncpy(sh[i].fakenick,nick,NICKLEN);
 }
 
 void deregfchanmsg(char *nick, char *mod) {
   long i; fchmsg *sh; unsigned int hasch;
   hasch=shlhash(nick);
+ // toLowerCase(mod);
   for (i=0;i<fchanmsglist[hasch].cursi;i++) {
     sh=(fchmsg *)fchanmsglist[hasch].content;
     if ((strcmp(nick,sh[i].fakenick)==0) && strcmp(sh[i].providedby,mod)==0) {
